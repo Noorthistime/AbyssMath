@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbyssMath</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="9" x2="20" y2="9"></line>
+            <line x1="4" y1="15" x2="20" y2="15"></line>
+            <line class="logo-cross-line" x1="10" y1="3" x2="14" y2="21"></line>
+          </svg>
+        </div>
+        <span class="logo-text">AbyssMath</span>
+      </div>
+      <div class="header-actions">
+        <div class="accent-selector">
+          <button id="accentToggle" class="btn btn-circle" aria-label="Toggle accent selector" type="button">
+            <span class="accent-preview-dot"></span>
+          </button>
+          <div id="accentDropdown" class="accent-dropdown">
+            <button class="accent-opt" data-accent="red" type="button">
+              <span class="accent-swatch" style="background: #e30000;"></span>
+              Nothing Red
+            </button>
+            <button class="accent-opt" data-accent="orange" type="button">
+              <span class="accent-swatch" style="background: #f97316;"></span>
+              Warmer Orange
+            </button>
+            <button class="accent-opt" data-accent="green" type="button">
+              <span class="accent-swatch" style="background: #22c55e;"></span>
+              Forest Green
+            </button>
+            <button class="accent-opt" data-accent="blue" type="button">
+              <span class="accent-swatch" style="background: #0ea5e9;"></span>
+              Ocean Blue
+            </button>
+            <div class="custom-color-picker-wrapper">
+              <span class="accent-swatch custom-swatch-preview"></span>
+              <label for="customColorPicker">Custom...</label>
+              <input type="color" id="customColorPicker" value="#e30000">
+            </div>
+          </div>
+        </div>
+
+        <button id="themeToggle" class="btn btn-circle theme-toggle" aria-label="Toggle theme" type="button">
+          <span class="theme-icon"></span>
+        </button>
+      </div>
+    </header>
+
+    <section class="workspace" aria-label="Calculator workspace">
+      <aside class="mode-panel" aria-label="Mode selector">
+        <h2>Mode</h2>
+        <div class="mode-list">
+          <button class="mode-button is-active" data-mode="standard" type="button">Standard</button>
+          <button class="mode-button" data-mode="scientific" type="button">Scientific</button>
+          <button class="mode-button" data-mode="programming" type="button">Programming</button>
+          <button class="mode-button" data-mode="date" type="button">Date Calculations</button>
+        </div>
+      </aside>
+
+      <section class="calculator-card" aria-label="Scientific calculator">
+      <div class="display">
+        <div class="expression" id="expression">0</div>
+        <div class="result" id="result"></div>
+      </div>
+
+      <div class="keypad" id="keypad">
+        <button data-action="clear" class="key key-secondary">AC</button>
+        <button data-insert="(" class="key key-secondary">( )</button>
+        <button data-insert="%" class="key key-secondary">%</button>
+        <button data-insert="/" class="key key-operator">&divide;</button>
+
+        <button data-insert="7" class="key">7</button>
+        <button data-insert="8" class="key">8</button>
+        <button data-insert="9" class="key">9</button>
+        <button data-insert="*" class="key key-operator">&times;</button>
+
+        <button data-insert="4" class="key">4</button>
+        <button data-insert="5" class="key">5</button>
+        <button data-insert="6" class="key">6</button>
+        <button data-insert="-" class="key key-operator">&minus;</button>
+
+        <button data-insert="1" class="key">1</button>
+        <button data-insert="2" class="key">2</button>
+        <button data-insert="3" class="key">3</button>
+        <button data-insert="+" class="key key-operator">+</button>
+
+        <button data-insert="." class="key">.</button>
+        <button data-insert="0" class="key">0</button>
+        <button data-action="backspace" class="key">C</button>
+        <button data-action="equals" class="key key-equals">=</button>
+      </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

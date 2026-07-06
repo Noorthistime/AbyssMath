@@ -1,0 +1,15 @@
+{
+  "name": "skills-copilot-codespaces-vscode",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scientific calculator website with a Node.js backend and a Nothing/Apple-inspired UI.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "mathjs": "^13.1.1"
+  }
+}
