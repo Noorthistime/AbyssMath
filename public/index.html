@@ -67,7 +67,7 @@
       <aside class="mode-panel" aria-label="Mode selector">
         <h2>Mode</h2>
         <div class="mode-list">
-          <button class="mode-button" type="button" onclick="void(0)">Phone</button>
+          <button class="mode-button" data-mode="phone" type="button">Phone</button>
           <button class="mode-button is-active" data-mode="standard" type="button">Standard</button>
           <button class="mode-button" data-mode="scientific" type="button">Scientific</button>
           <button class="mode-button" data-mode="programming" type="button">Programming</button>
@@ -77,6 +77,29 @@
       </aside>
 
       <section class="calculator-card" aria-label="Scientific calculator">
+        <!-- Phone Mode Header -->
+        <div class="phone-header" style="display: none;">
+          <span class="phone-title">Calculator</span>
+          <div class="phone-icons">
+            <button class="phone-icon-btn" aria-label="History" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 8v4l3 3"></path>
+                <path d="M3.51 9a9 9 0 1 1 0 6"></path>
+                <polyline points="2 9 6 9 6 5"></polyline>
+              </svg>
+            </button>
+            <button class="phone-icon-btn" aria-label="Functions" type="button">
+              <span class="fx-icon-text"><i>f<sub>x</sub></i></span>
+            </button>
+            <button class="phone-icon-btn" aria-label="Menu" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="6" r="1.5" fill="currentColor" stroke="none"></circle>
+                <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
+                <circle cx="12" cy="18" r="1.5" fill="currentColor" stroke="none"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
         <div class="display">
           <div class="expression" id="expression">0</div>
           <div class="result" id="result"></div>

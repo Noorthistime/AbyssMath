@@ -160,6 +160,34 @@ function loadAccent() {
 }
 
 function updateDisplay(message = expression ? 'Press = to calculate' : 'Ready') {
+  if (currentMode === 'phone') {
+    expressionEl.textContent = expression || '0';
+    
+    // Evaluate on the fly
+    if (!expression) {
+      resultEl.textContent = '';
+    } else {
+      try {
+        const processed = preprocessExpressionForBackend(expression);
+        // Clean trailing operators and whitespace
+        const cleanProcessed = processed.trim().replace(/[\+\-\*\/]+$/, '');
+        if (cleanProcessed) {
+          const evalResult = math.evaluate(cleanProcessed);
+          if (evalResult !== undefined && typeof evalResult !== 'function') {
+            resultEl.textContent = String(evalResult);
+          } else {
+            resultEl.textContent = '';
+          }
+        } else {
+          resultEl.textContent = '';
+        }
+      } catch (e) {
+        // Suppress errors during live preview typing
+      }
+    }
+    return;
+  }
+
   expressionEl.textContent = expression || '0';
   resultEl.textContent = message;
 }
@@ -191,7 +219,7 @@ function backspace() {
 }
 
 function setKeypadMode(mode) {
-  if (!['standard', 'scientific', 'programming', 'date', 'graphing'].includes(mode)) {
+  if (!['phone', 'standard', 'scientific', 'programming', 'date', 'graphing'].includes(mode)) {
     return;
   }
 
@@ -209,9 +237,15 @@ function setKeypadMode(mode) {
     button.classList.toggle('is-active', button.dataset.mode === mode);
   });
 
+  calculatorCard.classList.toggle('phone-mode', mode === 'phone');
   calculatorCard.classList.toggle('scientific-mode', mode === 'scientific');
   calculatorCard.classList.toggle('programming-mode', mode === 'programming');
   calculatorCard.classList.toggle('date-mode', mode === 'date');
+
+  const phoneHeader = calculatorCard.querySelector('.phone-header');
+  if (phoneHeader) {
+    phoneHeader.style.display = mode === 'phone' ? 'flex' : 'none';
+  }
 
   const graphingCard = document.getElementById('graphingCard');
   if (graphingCard) {
@@ -231,8 +265,9 @@ function setKeypadMode(mode) {
     }
   }
 
-  if (mode === 'standard') {
+  if (mode === 'phone' || mode === 'standard') {
     keypad.innerHTML = standardKeypadMarkup;
+    updateDisplay();
     return;
   }
 
@@ -1776,11 +1811,22 @@ async function evaluateExpression() {
     const payload = await response.json();
 
     if (!response.ok) {
-      updateDisplay(payload.error || 'Calculation failed.');
+      if (currentMode === 'phone') {
+        resultEl.textContent = payload.error || 'Error';
+      } else {
+        updateDisplay(payload.error || 'Calculation failed.');
+      }
       return;
     }
 
     let resultValue = payload.result;
+    if (currentMode === 'phone') {
+      expressionEl.textContent = expression;
+      resultEl.textContent = resultValue;
+      expression = resultValue;
+      return;
+    }
+
     if (currentMode === 'programming') {
       try {
         const num = Math.round(Number(resultValue));
@@ -1798,7 +1844,11 @@ async function evaluateExpression() {
     }
     updateDisplay(expression);
   } catch (error) {
-    updateDisplay('Backend unavailable.');
+    if (currentMode === 'phone') {
+      resultEl.textContent = 'Error';
+    } else {
+      updateDisplay('Backend unavailable.');
+    }
   }
 }
 
