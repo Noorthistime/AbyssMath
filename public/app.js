@@ -247,6 +247,13 @@ function setKeypadMode(mode) {
     phoneHeader.style.display = mode === 'phone' ? 'flex' : 'none';
   }
 
+  // Close all phone overlays & hide sci keypad when leaving phone mode
+  const phoneSciKeypad = document.getElementById('phoneScientificKeypad');
+  if (phoneSciKeypad) phoneSciKeypad.style.display = mode === 'phone' && phoneSciKeypad.dataset.open === '1' ? 'grid' : 'none';
+  document.getElementById('phoneHistoryOverlay')?.classList.remove('is-open');
+  document.getElementById('phoneSettingsOverlay')?.classList.remove('is-open');
+  document.getElementById('phoneAboutOverlay')?.classList.remove('is-open');
+
   const graphingCard = document.getElementById('graphingCard');
   if (graphingCard) {
     if (mode === 'graphing') {
@@ -267,6 +274,9 @@ function setKeypadMode(mode) {
 
   if (mode === 'phone' || mode === 'standard') {
     keypad.innerHTML = standardKeypadMarkup;
+    if (mode === 'phone' && typeof phoneApplySettings === 'function') {
+      phoneApplySettings();
+    }
     updateDisplay();
     return;
   }
@@ -2992,3 +3002,460 @@ function initFxKeypad() {
     });
   }
 }
+
+/* ==============================================================
+   PHONE MODE — NxCalculator Logic
+   Only active when currentMode === 'phone'.
+   ============================================================== */
+(function initPhoneMode() {
+  // ---- State ----
+  let phoneHistory = JSON.parse(localStorage.getItem('phoneHistory') || '[]');
+  let phoneInverted = false;
+  let phoneAngleMode = 'RAD'; // RAD or DEG
+
+  // ---- Defaults for settings ----
+  const PHONE_DEFAULTS = {
+    theme: 'dark',
+    shape: 'mixed',
+    density: 'normal',
+    numpadFont: 'Inter',
+    displayFont: 'Inter',
+    swapDecimalZero: false,
+    bottomToolbar: false,
+    hideCalcText: false,
+    preferIconsToText: false,
+    preventDuplicate: false,
+    startExtended: false,
+    disableHaptics: false,
+  };
+
+  function phoneGetSettings() {
+    try {
+      return { ...PHONE_DEFAULTS, ...JSON.parse(localStorage.getItem('phoneSettings') || '{}') };
+    } catch { return { ...PHONE_DEFAULTS }; }
+  }
+
+  function phoneSaveSettings(s) {
+    localStorage.setItem('phoneSettings', JSON.stringify(s));
+  }
+
+  // ---- Apply visual settings to the card ----
+  function phoneApplySettingsInner() {
+    const s = phoneGetSettings();
+    const card = document.querySelector('.calculator-card');
+    if (!card) return;
+
+    // Theme
+    card.classList.toggle('phone-light', s.theme === 'light');
+
+    // Shape
+    card.classList.remove('shape-circular', 'shape-rounded', 'shape-mixed');
+    card.classList.add('shape-' + s.shape);
+
+    // Density
+    card.classList.remove('density-comfy', 'density-normal', 'density-dense');
+    card.classList.add('density-' + s.density);
+
+    // Fonts
+    ['Inter', 'NDot', 'NType', 'SpaceMono', 'Playfair'].forEach(f => card.classList.remove('font-numpad-' + f));
+    card.classList.add('font-numpad-' + s.numpadFont);
+    ['Inter', 'NDot', 'NType', 'LetteraMono', 'Playfair'].forEach(f => card.classList.remove('font-display-' + f));
+    card.classList.add('font-display-' + s.displayFont);
+
+    // Hide "Calculator" text
+    const phoneTitle = document.getElementById('phoneTitle');
+    if (phoneTitle) phoneTitle.style.display = s.hideCalcText ? 'none' : '';
+
+    // Swap decimal and zero
+    const keys = document.querySelectorAll('#keypad .key');
+    let dotBtn = null, zeroBtn = null;
+    keys.forEach(k => {
+      if (k.dataset.insert === '.') dotBtn = k;
+      if (k.dataset.insert === '0') zeroBtn = k;
+    });
+    if (dotBtn && zeroBtn && s.swapDecimalZero) {
+      if (dotBtn.compareDocumentPosition(zeroBtn) & Node.DOCUMENT_POSITION_FOLLOWING) {
+        dotBtn.parentNode.insertBefore(zeroBtn, dotBtn);
+      }
+    }
+
+    // Prefer icon for clear button
+    const clearBtn = document.querySelector('#keypad .key[data-action="clear"]');
+    if (clearBtn) {
+      clearBtn.innerHTML = s.preferIconsToText
+        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+        : 'AC';
+    }
+
+    // Scientific keypad visibility — driven purely by startExtended setting
+    const sciKeypad = document.getElementById('phoneScientificKeypad');
+    const funcBtn = document.getElementById('phoneFunctionsBtn');
+    if (sciKeypad) {
+      if (s.startExtended) {
+        sciKeypad.style.display = 'grid';
+        sciKeypad.dataset.open = '1';
+        funcBtn?.classList.add('is-active');
+      } else {
+        sciKeypad.style.display = 'none';
+        sciKeypad.dataset.open = '0';
+        funcBtn?.classList.remove('is-active');
+      }
+    }
+
+    // Sync settings UI inputs if visible
+    syncSettingsUI(s);
+  }
+
+  // Expose globally so setKeypadMode can call it
+  window.phoneApplySettings = phoneApplySettingsInner;
+
+  function syncSettingsUI(s) {
+    const el = (id) => document.getElementById(id);
+    if (el('settingPhoneTheme')) el('settingPhoneTheme').value = s.theme;
+    if (el('settingPhoneShape')) el('settingPhoneShape').value = s.shape;
+    if (el('settingPhoneDensity')) el('settingPhoneDensity').value = s.density;
+    if (el('settingPhoneNumpadFont')) el('settingPhoneNumpadFont').value = s.numpadFont;
+    if (el('settingPhoneDisplayFont')) el('settingPhoneDisplayFont').value = s.displayFont;
+    if (el('settingPhoneSwapDecimalZero')) el('settingPhoneSwapDecimalZero').checked = s.swapDecimalZero;
+    if (el('settingPhoneBottomToolbar')) el('settingPhoneBottomToolbar').checked = s.bottomToolbar;
+    if (el('settingPhoneHideCalcText')) el('settingPhoneHideCalcText').checked = s.hideCalcText;
+    if (el('settingPhonePreferIconsToText')) el('settingPhonePreferIconsToText').checked = s.preferIconsToText;
+    if (el('settingPhonePreventDuplicate')) el('settingPhonePreventDuplicate').checked = s.preventDuplicate;
+    if (el('settingPhoneStartExtended')) el('settingPhoneStartExtended').checked = s.startExtended;
+    if (el('settingPhoneDisableHaptics')) el('settingPhoneDisableHaptics').checked = s.disableHaptics;
+  }
+
+  // ---- Haptic feedback ----
+  function phoneHaptic() {
+    const s = phoneGetSettings();
+    if (s.disableHaptics) return;
+    if (navigator.vibrate) navigator.vibrate(12);
+  }
+
+  // ---- History ----
+  function phoneRenderHistory() {
+    const list = document.getElementById('phoneHistoryList');
+    if (!list) return;
+    if (phoneHistory.length === 0) {
+      list.innerHTML = '<div class="phone-history-empty">No history yet</div>';
+      return;
+    }
+    list.innerHTML = phoneHistory.slice().reverse().map((item, i) => {
+      const idx = phoneHistory.length - 1 - i;
+      return `<div class="phone-history-item" data-idx="${idx}">
+        <div class="phone-history-expr">${item.expr}</div>
+        <div class="phone-history-res">${item.result}</div>
+      </div>`;
+    }).join('');
+
+    list.querySelectorAll('.phone-history-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.dataset.idx);
+        if (phoneHistory[idx]) {
+          expression = phoneHistory[idx].result;
+          updateDisplay();
+          document.getElementById('phoneHistoryOverlay')?.classList.remove('is-open');
+        }
+      });
+    });
+  }
+
+  function phoneSaveHistory(expr, result) {
+    const s = phoneGetSettings();
+    if (s.preventDuplicate && phoneHistory.length > 0) {
+      const last = phoneHistory[phoneHistory.length - 1];
+      if (last.expr === expr && last.result === result) return;
+    }
+    phoneHistory.push({ expr, result });
+    if (phoneHistory.length > 100) phoneHistory.shift();
+    localStorage.setItem('phoneHistory', JSON.stringify(phoneHistory));
+  }
+
+  // ---- Overlay helpers ----
+  function phoneOpenOverlay(id) {
+    document.getElementById(id)?.classList.add('is-open');
+  }
+  function phoneCloseOverlay(id) {
+    document.getElementById(id)?.classList.remove('is-open');
+  }
+
+  // ---- Header button events ----
+  document.getElementById('phoneFunctionsBtn')?.addEventListener('click', () => {
+    if (currentMode !== 'phone') return;
+    phoneHaptic();
+    // Toggle the startExtended setting — this keeps the fx button and settings toggle in sync
+    const s = phoneGetSettings();
+    s.startExtended = !s.startExtended;
+    phoneSaveSettings(s);
+    syncSettingsUI(s);       // keep the checkbox in the settings panel in sync
+    phoneApplySettingsInner(); // apply show/hide immediately
+  });
+
+  document.getElementById('phoneHistoryBtn')?.addEventListener('click', () => {
+    if (currentMode !== 'phone') return;
+    phoneHaptic();
+    phoneRenderHistory();
+    phoneOpenOverlay('phoneHistoryOverlay');
+  });
+
+  document.getElementById('phoneHistoryBackBtn')?.addEventListener('click', () => {
+    phoneCloseOverlay('phoneHistoryOverlay');
+  });
+
+  document.getElementById('phoneHistoryClearBtn')?.addEventListener('click', () => {
+    phoneHistory = [];
+    localStorage.removeItem('phoneHistory');
+    phoneRenderHistory();
+  });
+
+  document.getElementById('phoneMenuBtn')?.addEventListener('click', () => {
+    if (currentMode !== 'phone') return;
+    phoneHaptic();
+    syncSettingsUI(phoneGetSettings());
+    phoneOpenOverlay('phoneSettingsOverlay');
+  });
+
+  document.getElementById('phoneSettingsBackBtn')?.addEventListener('click', () => {
+    phoneCloseOverlay('phoneSettingsOverlay');
+  });
+
+  document.getElementById('phoneSettingsResetBtn')?.addEventListener('click', () => {
+    phoneSaveSettings({ ...PHONE_DEFAULTS });
+    phoneApplySettingsInner();
+    syncSettingsUI(PHONE_DEFAULTS);
+  });
+
+  // ---- About / Privacy / Licenses ----
+  document.getElementById('phoneBtnPrivacy')?.addEventListener('click', () => {
+    const content = document.getElementById('phoneAboutContent');
+    const title = document.getElementById('phoneAboutTitle');
+    if (content && title) {
+      title.textContent = 'Privacy Policy';
+      content.innerHTML = `
+        <p><strong>Effective Date:</strong> 22 March 2026</p>
+        <p><strong>1. Data Collection</strong><br>No personal information or user data is collected. No data leaves the device.</p>
+        <p><strong>2. Local Storage</strong><br>Calculation history and settings are stored locally in browser storage only. No internet access is required for calculator operations.</p>
+        <p><strong>3. Data Deletion</strong><br>All stored data can be removed by clearing browser data or resetting settings within the app.</p>
+        <p><strong>4. Third-Party Services</strong><br>No third-party analytics, advertising, or data-sharing services are integrated.</p>
+        <p><strong>5. Contact</strong><br>For inquiries: montybytes@gmail.com</p>
+      `;
+    }
+    phoneOpenOverlay('phoneAboutOverlay');
+  });
+
+  document.getElementById('phoneBtnLicenses')?.addEventListener('click', () => {
+    const content = document.getElementById('phoneAboutContent');
+    const title = document.getElementById('phoneAboutTitle');
+    if (content && title) {
+      title.textContent = 'Open Source Licenses';
+      content.innerHTML = `
+        <p><strong>NxCalculator</strong><br>MIT License — Copyright (c) montybytes</p>
+        <p><strong>NxDesign</strong><br>MIT License — Copyright (c) montybytes</p>
+        <p><strong>Nothing OS Fonts</strong><br>Licensed under their respective terms by Nothing Technology Limited.</p>
+        <p><strong>math.js</strong><br>Apache License 2.0 — Copyright (c) Jos de Jong</p>
+        <p style="margin-top: 1.5rem; font-style: italic; color: #666;">This calculator UI is inspired by the NxCalculator app for Nothing OS.</p>
+      `;
+    }
+    phoneOpenOverlay('phoneAboutOverlay');
+  });
+
+  document.getElementById('phoneAboutBackBtn')?.addEventListener('click', () => {
+    phoneCloseOverlay('phoneAboutOverlay');
+  });
+
+  // ---- Settings change handlers ----
+  const settingSelects = ['settingPhoneTheme', 'settingPhoneShape', 'settingPhoneDensity', 'settingPhoneNumpadFont', 'settingPhoneDisplayFont'];
+  settingSelects.forEach(id => {
+    document.getElementById(id)?.addEventListener('change', () => {
+      const s = phoneGetSettings();
+      if (id === 'settingPhoneTheme') s.theme = document.getElementById(id).value;
+      if (id === 'settingPhoneShape') s.shape = document.getElementById(id).value;
+      if (id === 'settingPhoneDensity') s.density = document.getElementById(id).value;
+      if (id === 'settingPhoneNumpadFont') s.numpadFont = document.getElementById(id).value;
+      if (id === 'settingPhoneDisplayFont') s.displayFont = document.getElementById(id).value;
+      phoneSaveSettings(s);
+      phoneApplySettingsInner();
+    });
+  });
+
+  const settingToggles = [
+    ['settingPhoneSwapDecimalZero', 'swapDecimalZero'],
+    ['settingPhoneBottomToolbar', 'bottomToolbar'],
+    ['settingPhoneHideCalcText', 'hideCalcText'],
+    ['settingPhonePreferIconsToText', 'preferIconsToText'],
+    ['settingPhonePreventDuplicate', 'preventDuplicate'],
+    ['settingPhoneStartExtended', 'startExtended'],
+    ['settingPhoneDisableHaptics', 'disableHaptics'],
+  ];
+  settingToggles.forEach(([id, key]) => {
+    document.getElementById(id)?.addEventListener('change', () => {
+      const s = phoneGetSettings();
+      s[key] = document.getElementById(id).checked;
+      phoneSaveSettings(s);
+      phoneApplySettingsInner();
+    });
+  });
+
+  // ---- Scientific Keypad Click Handling ----
+  document.getElementById('phoneScientificKeypad')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (currentMode !== 'phone') return;
+    phoneHaptic();
+
+    const action = btn.dataset.action;
+    const insert = btn.dataset.insert;
+
+    if (insert) {
+      insertValue(insert);
+      return;
+    }
+
+    if (!action) return;
+
+    // INV toggle
+    if (action === 'phone-sci-invert') {
+      phoneInverted = !phoneInverted;
+      btn.classList.toggle('sci-active', phoneInverted);
+      phoneUpdateSciLabels();
+      return;
+    }
+
+    // DEG/RAD toggle
+    if (action === 'phone-sci-mode') {
+      phoneAngleMode = phoneAngleMode === 'RAD' ? 'DEG' : 'RAD';
+      btn.textContent = phoneAngleMode;
+      btn.classList.toggle('sci-active', phoneAngleMode === 'DEG');
+      return;
+    }
+
+    // Trig functions
+    if (action === 'phone-sci-sin') {
+      if (phoneInverted) { insertValue('asin('); } else { insertValue(phoneAngleMode === 'DEG' ? 'sin(pi/180*' : 'sin('); }
+      return;
+    }
+    if (action === 'phone-sci-cos') {
+      if (phoneInverted) { insertValue('acos('); } else { insertValue(phoneAngleMode === 'DEG' ? 'cos(pi/180*' : 'cos('); }
+      return;
+    }
+    if (action === 'phone-sci-tan') {
+      if (phoneInverted) { insertValue('atan('); } else { insertValue(phoneAngleMode === 'DEG' ? 'tan(pi/180*' : 'tan('); }
+      return;
+    }
+
+    // sqrt / x²
+    if (action === 'phone-sci-root') {
+      if (phoneInverted) {
+        insertValue('^2');
+      } else {
+        insertValue('sqrt(');
+      }
+      return;
+    }
+
+    // ln / e^x
+    if (action === 'phone-sci-ln') {
+      if (phoneInverted) {
+        insertValue('exp(');
+      } else {
+        insertValue('log(');
+      }
+      return;
+    }
+
+    // log / 10^x
+    if (action === 'phone-sci-log') {
+      if (phoneInverted) {
+        insertValue('10^');
+      } else {
+        insertValue('log10(');
+      }
+      return;
+    }
+
+    // factorial
+    if (action === 'phone-sci-factorial') {
+      insertValue('!');
+      return;
+    }
+  });
+
+  function phoneUpdateSciLabels() {
+    const sciKeypad = document.getElementById('phoneScientificKeypad');
+    if (!sciKeypad) return;
+    const btns = sciKeypad.querySelectorAll('button');
+    btns.forEach(btn => {
+      const action = btn.dataset.action;
+      if (action === 'phone-sci-root') btn.textContent = phoneInverted ? 'x²' : '√';
+      if (action === 'phone-sci-sin') btn.textContent = phoneInverted ? 'sin⁻¹' : 'sin';
+      if (action === 'phone-sci-cos') btn.textContent = phoneInverted ? 'cos⁻¹' : 'cos';
+      if (action === 'phone-sci-tan') btn.textContent = phoneInverted ? 'tan⁻¹' : 'tan';
+      if (action === 'phone-sci-ln') btn.textContent = phoneInverted ? 'eˣ' : 'ln';
+      if (action === 'phone-sci-log') btn.textContent = phoneInverted ? '10ˣ' : 'log';
+    });
+  }
+
+  // ---- Override evaluateExpression for phone history ----
+  const originalEvaluateExpression = window.evaluateExpression || evaluateExpression;
+  const phoneEvaluateExpression = async function() {
+    if (currentMode !== 'phone') {
+      return originalEvaluateExpression();
+    }
+
+    if (!expression.trim()) {
+      updateDisplay('Enter a calculation first.');
+      return;
+    }
+
+    const exprBefore = expression;
+    phoneHaptic();
+
+    try {
+      const response = await fetch('/api/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expression: preprocessExpressionForBackend(expression) })
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        resultEl.textContent = payload.error || 'Error';
+        return;
+      }
+
+      const resultValue = payload.result;
+      expressionEl.textContent = exprBefore;
+      resultEl.textContent = resultValue;
+
+      // Save to history
+      phoneSaveHistory(exprBefore, String(resultValue));
+
+      expression = String(resultValue);
+    } catch (error) {
+      resultEl.textContent = 'Error';
+    }
+  };
+
+  // Patch the equals action to use phone-specific evaluate
+  const origHandleCalcAction = handleCalculatorAction;
+  handleCalculatorAction = async function(action, button) {
+    if (currentMode === 'phone' && action === 'equals') {
+      await phoneEvaluateExpression();
+      return;
+    }
+    // Phone-specific haptic on any keypress
+    if (currentMode === 'phone') {
+      phoneHaptic();
+    }
+    return origHandleCalcAction(action, button);
+  };
+
+  // Also add haptic to insert for phone mode
+  const origInsertValue = insertValue;
+  insertValue = function(value) {
+    if (currentMode === 'phone') phoneHaptic();
+    return origInsertValue(value);
+  };
+
+})();

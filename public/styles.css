@@ -2842,7 +2842,9 @@ html[data-theme="light"] .fx-cat-dropdown .fx-key {
   border: 1px solid rgba(0, 0, 0, 0.02);
 }
 
-/* Phone Mode Styles */
+/* ======================================================
+   Phone Mode Styles — NxCalculator / NothingOS inspired
+   ====================================================== */
 .calculator-card.phone-mode {
   width: 350px !important;
   height: 100% !important;
@@ -2857,166 +2859,385 @@ html[data-theme="light"] .fx-cat-dropdown .fx-key {
   padding: 1.8rem 1.4rem 1.4rem 1.4rem !important;
   display: flex;
   flex-direction: column;
-  color: #ffffff !important;
-  font-family: "Inter", sans-serif;
+  color: #efefef !important;
+  font-family: "NType", "Inter", sans-serif;
   overflow: hidden;
+  position: relative !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: none !important;
 }
 
+/* Light Theme */
+.calculator-card.phone-mode.phone-light {
+  background: #f2f2f2 !important;
+  border: 4px solid #dddddd !important;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.15), inset 0 0 10px rgba(0,0,0,0.02) !important;
+  color: #1c1c1c !important;
+}
+
+/* ---- Phone Header ---- */
 .phone-mode .phone-header {
   display: flex !important;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
   padding: 0 0.5rem;
+  flex-shrink: 0;
 }
-
 .phone-mode .phone-title {
-  font-family: "Playfair Display", Georgia, serif !important;
-  font-size: 2rem !important;
-  font-weight: 700 !important;
+  font-family: "Inter", system-ui, sans-serif !important;
+  font-size: 1.3rem !important;
+  font-weight: 400 !important;
   color: #ffffff !important;
-  letter-spacing: -0.02em !important;
+  letter-spacing: 0 !important;
+}
+.phone-mode.phone-light .phone-title { color: #1c1c1c !important; }
+
+/* fx + gear visible; history btn hidden (kept in DOM for overlay JS) */
+.phone-mode #phoneHistoryBtn {
+  display: none !important;
+}
+.phone-mode #phoneMenuBtn {
+  display: flex !important;
 }
 
 .phone-mode .phone-icons {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.8rem;
 }
-
 .phone-mode .phone-icon-btn {
   background: transparent !important;
   border: none !important;
   color: #ffffff !important;
   cursor: pointer;
-  padding: 4px;
+  padding: 8px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.2s;
+  transition: background-color 0.2s, opacity 0.2s;
 }
-
-.phone-mode .phone-icon-btn:hover {
-  opacity: 0.7;
-}
+.phone-mode.phone-light .phone-icon-btn { color: #1c1c1c !important; }
+.phone-mode .phone-icon-btn:hover { background: rgba(255,255,255,0.1) !important; }
+.phone-mode.phone-light .phone-icon-btn:hover { background: rgba(0,0,0,0.06) !important; }
 
 .phone-mode .fx-icon-text {
   font-family: "Playfair Display", Georgia, serif !important;
-  font-size: 1.35rem !important;
+  font-size: 1.2rem !important;
   font-style: italic !important;
   font-weight: 600 !important;
+  line-height: 1;
+}
+.phone-mode #phoneFunctionsBtn.is-active {
+  background: #d71921 !important;
   color: #ffffff !important;
 }
 
+/* ---- Display ---- */
 .phone-mode .display {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   padding: 0 0.5rem !important;
-  min-height: 140px !important;
+  flex: 1 1 auto !important;
+  min-height: 100px !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-end !important;
   align-items: flex-end !important;
   text-align: right !important;
-  margin-bottom: 2rem !important;
-}
-
-.phone-mode .display .expression {
-  font-family: "Inter", sans-serif !important;
-  font-size: 2.8rem !important;
-  font-weight: 400 !important;
-  color: #ffffff !important;
-  letter-spacing: -0.02em !important;
-  line-height: 1.2 !important;
-  word-break: break-all !important;
-  width: 100% !important;
-  text-align: right !important;
-}
-
-.phone-mode .display .result {
-  font-family: "Inter", sans-serif !important;
-  font-size: 2rem !important;
-  font-weight: 400 !important;
-  color: #888888 !important;
-  letter-spacing: -0.02em !important;
-  margin-top: 0.5rem !important;
-  min-height: 2.4rem !important;
-  word-break: break-all !important;
-  width: 100% !important;
-  text-align: right !important;
-}
-
-.phone-mode .keypad {
-  grid-template-columns: repeat(4, 1fr) !important;
-  gap: 1rem !important;
   margin-bottom: 1.5rem !important;
+  overflow: hidden;
+}
+.phone-mode .display .expression {
+  font-family: "Inter", system-ui, sans-serif !important;
+  font-size: 2.4rem !important;
+  font-weight: 300 !important;
+  color: #ffffff !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.2 !important;
+  word-wrap: break-word !important;
+  word-break: break-all !important;
+  width: 100% !important;
+  text-align: right !important;
+  max-height: 120px;
+  overflow: hidden;
+}
+.phone-mode.phone-light .display .expression { color: #1c1c1c !important; }
+.phone-mode .display .result {
+  font-family: "Inter", system-ui, sans-serif !important;
+  font-size: 1.4rem !important;
+  font-weight: 300 !important;
+  color: #888888 !important;
+  letter-spacing: 0 !important;
+  margin-top: 0.2rem !important;
+  min-height: 1.8rem !important;
+  word-wrap: break-word !important;
+  word-break: break-all !important;
+  width: 100% !important;
+  text-align: right !important;
+}
+.phone-mode.phone-light .display .result { color: #666666 !important; }
+
+/* ---- Keypad Grids ---- */
+.phone-mode .keypad {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  grid-template-rows: repeat(5, 1fr) !important;
+  width: 100% !important;
+  flex: 0 0 auto !important;
+  height: auto !important;
+}
+.phone-mode .phone-scientific-keypad {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  grid-template-rows: repeat(3, 1fr) !important;
+  width: 100% !important;
+  flex: 0 0 auto !important;
+  height: auto !important;
 }
 
+/* Density */
+.phone-mode .keypad,
+.phone-mode .phone-scientific-keypad { gap: 0.65rem !important; margin-bottom: 0.65rem !important; }
+.phone-mode.density-comfy .keypad,
+.phone-mode.density-comfy .phone-scientific-keypad { gap: 1rem !important; margin-bottom: 1rem !important; }
+.phone-mode.density-dense .keypad,
+.phone-mode.density-dense .phone-scientific-keypad { gap: 0.35rem !important; margin-bottom: 0.35rem !important; }
+
+/* ---- Key Buttons ---- */
 .phone-mode .key {
-  border-radius: 50% !important;
   aspect-ratio: 1 / 1 !important;
   width: 100% !important;
   height: auto !important;
   min-height: 0 !important;
-  font-family: "Playfair Display", Georgia, serif !important;
-  font-size: 1.7rem !important;
+  border-radius: 50% !important;
+  font-family: "Inter", system-ui, sans-serif !important;
+  font-size: 1.45rem !important;
   font-weight: 400 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   border: none !important;
-  transition: opacity 0.15s ease, transform 0.1s ease !important;
-  background: #121212 !important;
+  outline: none !important;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease, transform 0.08s ease, opacity 0.1s ease !important;
+  background: #1c1c1e !important;
   color: #ffffff !important;
+  box-sizing: border-box !important;
 }
+.phone-mode .key:hover { opacity: 0.85 !important; transform: none !important; box-shadow: none !important; }
+.phone-mode .key:active { transform: scale(0.88) !important; opacity: 0.7 !important; }
 
-.phone-mode .key:hover {
-  transform: none !important;
-  box-shadow: none !important;
-  opacity: 0.85 !important;
-}
-
-.phone-mode .key:active {
-  transform: scale(0.92) !important;
-}
-
-.phone-mode .key[data-action="clear"] {
-  background: #c61a1a !important;
-  color: #ffffff !important;
-}
-
+/* Key colours — Dark */
+.phone-mode .key[data-action="clear"] { background: #d71921 !important; color: #fff !important; }
 .phone-mode .key[data-insert="("],
-.phone-mode .key[data-insert="%"] {
-  background: #252525 !important;
-  color: #ffffff !important;
-}
+.phone-mode .key[data-insert="%"] { background: #1c1c1e !important; color: #ffffff !important; }
+/* Operators: WHITE circles — matching NxCalculator reference */
+.phone-mode .key-operator { background: #d8d8d8 !important; color: #1c1c1e !important; }
+.phone-mode .key[data-action="backspace"] { background: #1c1c1e !important; color: #ffffff !important; }
+.phone-mode .key-equals { background: #d71921 !important; color: #fff !important; }
+.phone-mode .key-equals:hover { background: #d71921 !important; box-shadow: none !important; opacity: 0.85 !important; }
 
-.phone-mode .key-operator {
-  background: #ffffff !important;
-  color: #000000 !important;
-}
+/* Key colours — Light */
+.phone-mode.phone-light .key { background: #e8e8e8 !important; color: #1c1c1c !important; }
+.phone-mode.phone-light .key[data-action="clear"] { background: #d71921 !important; color: #fff !important; }
+.phone-mode.phone-light .key[data-insert="("],
+.phone-mode.phone-light .key[data-insert="%"] { background: #d0d0d0 !important; color: #1c1c1c !important; }
+.phone-mode.phone-light .key-operator { background: #1c1c1c !important; color: #ffffff !important; }
+.phone-mode.phone-light .key[data-action="backspace"] { background: #d0d0d0 !important; color: #1c1c1c !important; }
+.phone-mode.phone-light .key-equals { background: #d71921 !important; color: #fff !important; }
 
-.phone-mode .key[data-action="backspace"] {
+/* ---- Key Shapes ---- */
+/* Default is circular (already set on .phone-mode .key above) */
+.phone-mode.shape-rounded .key { border-radius: 20px !important; }
+.phone-mode.shape-mixed .key { border-radius: 50% !important; }
+.phone-mode.shape-mixed .key[data-action="clear"],
+.phone-mode.shape-mixed .key[data-action="backspace"],
+.phone-mode.shape-mixed .key-equals {
   border-radius: 20px !important;
   aspect-ratio: auto !important;
-  background: #252525 !important;
-  color: #ffffff !important;
   height: 100% !important;
 }
 
-.phone-mode .key-equals {
-  border-radius: 20px !important;
-  aspect-ratio: auto !important;
-  background: #c61a1a !important;
-  color: #ffffff !important;
-  box-shadow: none !important;
+/* ---- Scientific Keys ---- */
+.phone-mode .key-sci {
+  background: #121212 !important;
+  color: #c8c8c8 !important;
+  font-size: 1.15rem !important;
+  aspect-ratio: 1.7 / 1 !important;
+  border-radius: 12px !important;
+}
+.phone-mode.phone-light .key-sci { background: #e3e3e3 !important; color: #484848 !important; box-shadow: none !important; }
+.phone-mode .key-sci.sci-active { border: 1.5px solid #d71921 !important; color: #d71921 !important; }
+
+/* ---- Font Classes ---- */
+.phone-mode.font-numpad-Playfair .key { font-family: "Playfair Display", Georgia, serif !important; font-weight: 500 !important; }
+.phone-mode.font-numpad-Inter .key { font-family: "Inter", system-ui, sans-serif !important; font-weight: 400 !important; }
+.phone-mode.font-numpad-NDot .key { font-family: "NDot", monospace !important; }
+.phone-mode.font-numpad-NType .key { font-family: "NType", sans-serif !important; }
+.phone-mode.font-numpad-SpaceMono .key { font-family: "SpaceMono", monospace !important; }
+
+.phone-mode.font-display-Playfair .display .expression,
+.phone-mode.font-display-Playfair .display .result { font-family: "Playfair Display", Georgia, serif !important; }
+.phone-mode.font-display-Inter .display .expression,
+.phone-mode.font-display-Inter .display .result { font-family: "Inter", system-ui, sans-serif !important; }
+.phone-mode.font-display-NDot .display .expression,
+.phone-mode.font-display-NDot .display .result { font-family: "NDot", monospace !important; }
+.phone-mode.font-display-NType .display .expression,
+.phone-mode.font-display-NType .display .result { font-family: "NType", sans-serif !important; }
+.phone-mode.font-display-LetteraMono .display .expression,
+.phone-mode.font-display-LetteraMono .display .result { font-family: "LetteraMono", monospace !important; }
+
+/* ======================================================
+   Phone Overlays (History / Settings / About)
+   Hidden by default, shown via .is-open
+   ====================================================== */
+.phone-history-overlay,
+.phone-settings-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
   height: 100% !important;
+  background: #000000 !important;
+  z-index: 1000 !important;
+  display: none;
+  flex-direction: column;
+  padding: 1.8rem 1.4rem !important;
+  box-sizing: border-box !important;
+}
+.phone-history-overlay.is-open,
+.phone-settings-overlay.is-open {
+  display: flex !important;
+  animation: phoneSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.phone-light .phone-history-overlay,
+.phone-light .phone-settings-overlay { background: #f2f2f2 !important; }
+
+@keyframes phoneSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }
 
-.phone-mode .key-equals:hover {
-  background: #c61a1a !important;
-  box-shadow: none !important;
+/* Overlay Headers */
+.phone-overlay-header {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid #1c1c1c;
+  margin-bottom: 1.2rem;
+  flex-shrink: 0;
 }
+.phone-light .phone-overlay-header { border-bottom-color: #e3e3e3; }
+.phone-overlay-title {
+  font-family: "NType", "Inter", sans-serif !important;
+  font-size: 1.8rem !important;
+  font-weight: 700;
+  color: #ffffff;
+}
+.phone-light .phone-overlay-title { color: #1c1c1c; }
+.phone-overlay-back,
+.phone-overlay-action {
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+.phone-light .phone-overlay-back,
+.phone-light .phone-overlay-action { color: #1c1c1c !important; }
+.phone-overlay-back:hover,
+.phone-overlay-action:hover { background: rgba(255,255,255,0.1) !important; }
+.phone-light .phone-overlay-back:hover,
+.phone-light .phone-overlay-action:hover { background: rgba(0,0,0,0.06) !important; }
+
+/* History list */
+.phone-history-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.phone-history-item {
+  border-bottom: 1px solid #1c1c1c;
+  padding-bottom: 0.8rem;
+  padding-top: 0.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.phone-light .phone-history-item { border-bottom-color: #e3e3e3; }
+.phone-history-item:hover { opacity: 0.85; }
+.phone-history-expr { font-size: 1rem; color: #888888; word-break: break-all; text-align: right; margin-bottom: 0.2rem; }
+.phone-history-res { font-size: 1.4rem; font-weight: 600; color: #ffffff; word-break: break-all; text-align: right; }
+.phone-light .phone-history-res { color: #1c1c1c; }
+.phone-history-empty { color: #888888; text-align: center; margin-top: 4rem; font-size: 1.1rem; }
+
+/* Settings groups */
+.phone-settings-list { flex: 1 1 auto; overflow-y: auto; padding-right: 0.2rem; }
+.phone-settings-group { margin-bottom: 1.8rem; }
+.phone-settings-group-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: #d71921;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+  padding-left: 0.5rem;
+}
+.phone-settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.2rem;
+  background: #1c1c1c;
+  border-bottom: 1px solid #121212;
+  color: #efefef;
+  transition: background-color 0.2s;
+  box-sizing: border-box;
+}
+.phone-light .phone-settings-item { background: #ffffff; border-bottom-color: #f2f2f2; color: #1c1c1c; }
+.phone-settings-item:first-of-type { border-top-left-radius: 16px; border-top-right-radius: 16px; }
+.phone-settings-item:last-of-type { border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; border-bottom: none; }
+.phone-settings-item-label { display: flex; flex-direction: column; gap: 0.15rem; padding-right: 1rem; flex: 1; }
+.phone-settings-item-name { font-size: 1.05rem; font-weight: 500; }
+.phone-settings-item-desc { font-size: 0.8rem; color: #888888; line-height: 1.3; }
+.phone-light .phone-settings-item-desc { color: #666666; }
+
+.phone-settings-select {
+  background: #252525; color: #ffffff; border: 1px solid #444444;
+  padding: 6px 12px; border-radius: 8px; font-size: 0.95rem;
+  outline: none; cursor: pointer; max-width: 150px;
+}
+.phone-light .phone-settings-select { background: #f2f2f2; color: #1c1c1c; border-color: #cccccc; }
+
+.phone-clickable-item { cursor: pointer; }
+.phone-clickable-item:hover { background: #252525; }
+.phone-light .phone-clickable-item:hover { background: #f8f8f8; }
+
+/* Toggle switch */
+.phone-settings-switch { position: relative; display: inline-block; width: 46px; height: 24px; flex-shrink: 0; }
+.phone-settings-switch input { opacity: 0; width: 0; height: 0; }
+.phone-settings-slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #333333; transition: .2s; border-radius: 24px;
+}
+.phone-light .phone-settings-slider { background-color: #cccccc; }
+.phone-settings-slider:before {
+  position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+  background-color: white; transition: .2s; border-radius: 50%;
+}
+input:checked + .phone-settings-slider { background-color: #d71921; }
+input:checked + .phone-settings-slider:before { transform: translateX(22px); }
