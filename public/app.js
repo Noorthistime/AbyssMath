@@ -43,6 +43,8 @@ let dateAddSubOp = 'add';
 let dateAddYears = 0;
 let dateAddMonths = 0;
 let dateAddDays = 0;
+let resultDpMonth = new Date().getMonth();
+let resultDpYear = new Date().getFullYear();
 
 function hexToRgb(hex) {
   const normalized = hex.replace('#', '');
@@ -189,7 +191,7 @@ function backspace() {
 }
 
 function setKeypadMode(mode) {
-  if (!['standard', 'scientific', 'programming', 'date'].includes(mode)) {
+  if (!['standard', 'scientific', 'programming', 'date', 'graphing'].includes(mode)) {
     return;
   }
 
@@ -210,6 +212,24 @@ function setKeypadMode(mode) {
   calculatorCard.classList.toggle('scientific-mode', mode === 'scientific');
   calculatorCard.classList.toggle('programming-mode', mode === 'programming');
   calculatorCard.classList.toggle('date-mode', mode === 'date');
+
+  const graphingCard = document.getElementById('graphingCard');
+  if (graphingCard) {
+    if (mode === 'graphing') {
+      calculatorCard.style.display = 'none';
+      graphingCard.style.display = 'flex';
+      initGraphCanvas();
+      // Ensure layout is updated and active tab resets to Graph view
+      requestAnimationFrame(() => {
+        document.getElementById('graphViewBtn')?.click();
+        recenterGraph();
+      });
+      return;
+    } else {
+      calculatorCard.style.display = 'flex';
+      graphingCard.style.display = 'none';
+    }
+  }
 
   if (mode === 'standard') {
     keypad.innerHTML = standardKeypadMarkup;
@@ -306,6 +326,21 @@ function renderScientificKeypad() {
         </div>
       </div>
     `;
+  } else if (scientificDropdown === 'memory') {
+    const memItems = memoryList.length === 0
+      ? '<div class="sci-mem-empty">No stored memory</div>'
+      : memoryList.slice().reverse().map((val, idx) => {
+          const originalIndex = memoryList.length - 1 - idx;
+          return `<button class="sci-mem-item" data-action="recall-sci-memory" data-index="${originalIndex}" type="button">${val}</button>`;
+        }).join('');
+    overlayHtml = `
+      <div class="scientific-overlay-dialog memory-dialog">
+        <div class="sci-mem-list">${memItems}</div>
+        <button class="sci-mem-clear-btn" data-action="clear-sci-memory" type="button" title="Clear all memory">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+    `;
   }
 
   keypad.innerHTML = `
@@ -318,9 +353,9 @@ function renderScientificKeypad() {
       <button class="scientific-memory" data-action="memory-clear" type="button">MC</button>
       <button class="scientific-memory" data-action="memory-recall" type="button">MR</button>
       <button class="scientific-memory" data-action="memory-add" type="button">M+</button>
-      <button class="scientific-memory" data-action="memory-subtract" type="button">M-</button>
+      <button class="scientific-memory" data-action="memory-subtract" type="button">M−</button>
       <button class="scientific-memory" data-action="memory-store" type="button">MS</button>
-      <button class="scientific-memory" data-action="memory-view" type="button">M⌄</button>
+      <button class="scientific-memory ${scientificDropdown === 'memory' ? 'is-active' : ''}" data-action="toggle-scientific-panel" data-panel="memory" type="button">M⌄</button>
     </div>
 
     <div class="scientific-toolbar">
@@ -337,100 +372,93 @@ function renderScientificKeypad() {
 
 function renderDateKeypad() {
   const isDiffMode = dateSubMode === 'diff';
-  
-  let submodeHtml = '';
+
   if (isDiffMode) {
-    submodeHtml = `
-      <div class="date-input-group">
-        <label class="date-label">To</label>
-        <button class="date-picker-trigger" data-action="open-date-picker" data-picker="to" type="button">
-          <span id="dateToText">${formatDateString(dateTo)}</span>
-          <svg class="date-calendar-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-        </button>
-      </div>
+    keypad.innerHTML = `
+      <div class="date-calc-container">
+        <div class="date-mode-selector">
+          <button class="date-dropdown-btn" data-action="toggle-date-mode-menu" type="button">
+            <span>Difference between dates</span>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="date-dropdown-menu" id="dateModeMenu" hidden>
+            <button class="date-dropdown-item active" data-action="select-date-submode" data-submode="diff" type="button">
+              <span class="active-indicator"></span>
+              Difference between dates
+            </button>
+            <button class="date-dropdown-item" data-action="select-date-submode" data-submode="add-sub" type="button">
+              <span class="active-indicator"></span>
+              Add or subtract days
+            </button>
+          </div>
+        </div>
 
-      <div class="date-input-group">
-        <label class="date-label">Difference</label>
-        <div class="date-result-panel">
-          <span id="dateResult">${calculateDateDifference(dateFrom, dateTo)}</span>
+        <div class="date-input-group">
+          <label class="date-label">From</label>
+          <button class="date-picker-trigger" data-action="open-date-picker" data-picker="from" type="button">
+            <span id="dateFromText">${formatDateString(dateFrom)}</span>
+            <svg class="date-calendar-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="date-input-group">
+          <label class="date-label">To</label>
+          <button class="date-picker-trigger" data-action="open-date-picker" data-picker="to" type="button">
+            <span id="dateToText">${formatDateString(dateTo)}</span>
+            <svg class="date-calendar-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="date-input-group">
+          <label class="date-label">Difference</label>
+          <div class="date-result-panel">
+            <span id="dateResult">${calculateDateDifference(dateFrom, dateTo)}</span>
+          </div>
+        </div>
+
+        <div class="date-picker-dialog" id="datePickerDialog" hidden>
+          <div class="dp-header">
+            <button class="dp-nav-btn" data-action="dp-prev" type="button">&lt;</button>
+            <span class="dp-month-year">
+              <button class="dp-header-btn" data-action="dp-select-month" id="dpMonthBtn" type="button"></button>
+              <button class="dp-header-btn" data-action="dp-select-year" id="dpYearBtn" type="button"></button>
+            </span>
+            <button class="dp-nav-btn" data-action="dp-next" type="button">&gt;</button>
+          </div>
+          <div class="dp-weekdays">
+            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+          </div>
+          <div class="dp-days" id="dpDaysGrid"></div>
         </div>
       </div>
     `;
-  } else {
-    submodeHtml = `
-      <!-- Add/Subtract Radio Toggles -->
-      <div class="date-radio-group">
-        <label class="date-radio-label">
-          <input type="radio" name="dateAddSubOp" value="add" ${dateAddSubOp === 'add' ? 'checked' : ''}>
-          <span class="radio-custom"></span>
-          Add
-        </label>
-        <label class="date-radio-label">
-          <input type="radio" name="dateAddSubOp" value="subtract" ${dateAddSubOp === 'subtract' ? 'checked' : ''}>
-          <span class="radio-custom"></span>
-          Subtract
-        </label>
-      </div>
-
-      <!-- Dropdown Selectors for Years, Months, Days -->
-      <div class="date-dropdowns-row">
-        <div class="date-select-field">
-          <label class="date-label">Years</label>
-          <div class="select-wrapper">
-            <select id="dateAddYears">
-              ${renderSelectOptions(0, 100, dateAddYears)}
-            </select>
-            <svg class="select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </div>
-        </div>
-        <div class="date-select-field">
-          <label class="date-label">Months</label>
-          <div class="select-wrapper">
-            <select id="dateAddMonths">
-              ${renderSelectOptions(0, 100, dateAddMonths)}
-            </select>
-            <svg class="select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </div>
-        </div>
-        <div class="date-select-field">
-          <label class="date-label">Days</label>
-          <div class="select-wrapper">
-            <select id="dateAddDays">
-              ${renderSelectOptions(0, 100, dateAddDays)}
-            </select>
-            <svg class="select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Result Date Display -->
-      <div class="date-input-group">
-        <label class="date-label">Date</label>
-        <div class="date-result-panel">
-          <span id="dateResult">${formatDateString(addOrSubtractDate(dateFrom, dateAddYears, dateAddMonths, dateAddDays, dateAddSubOp))}</span>
-        </div>
-      </div>
-    `;
+    return;
   }
 
+      // Add-sub mode - single column, calendars side by side at bottom
   keypad.innerHTML = `
-    <div class="date-calc-container">
+    <div class="date-calc-container add-sub-layout">
       <div class="date-mode-selector">
         <button class="date-dropdown-btn" data-action="toggle-date-mode-menu" type="button">
-          <span>${isDiffMode ? 'Difference between dates' : 'Add or subtract days'}</span>
+          <span>Add or subtract days</span>
           <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </button>
         <div class="date-dropdown-menu" id="dateModeMenu" hidden>
-          <button class="date-dropdown-item ${isDiffMode ? 'active' : ''}" data-action="select-date-submode" data-submode="diff" type="button">
+          <button class="date-dropdown-item" data-action="select-date-submode" data-submode="diff" type="button">
             <span class="active-indicator"></span>
             Difference between dates
           </button>
-          <button class="date-dropdown-item ${!isDiffMode ? 'active' : ''}" data-action="select-date-submode" data-submode="add-sub" type="button">
+          <button class="date-dropdown-item active" data-action="select-date-submode" data-submode="add-sub" type="button">
             <span class="active-indicator"></span>
             Add or subtract days
           </button>
@@ -450,26 +478,115 @@ function renderDateKeypad() {
         </button>
       </div>
 
-      ${submodeHtml}
+      <div class="date-radio-group">
+        <label class="date-radio-label">
+          <input type="radio" name="dateAddSubOp" value="add" ${dateAddSubOp === 'add' ? 'checked' : ''}>
+          <span class="radio-custom"></span>
+          Add
+        </label>
+        <label class="date-radio-label">
+          <input type="radio" name="dateAddSubOp" value="subtract" ${dateAddSubOp === 'subtract' ? 'checked' : ''}>
+          <span class="radio-custom"></span>
+          Subtract
+        </label>
+      </div>
 
-      <div class="date-picker-dialog" id="datePickerDialog" hidden>
-        <div class="dp-header">
-          <button class="dp-nav-btn" data-action="dp-prev" type="button">&lt;</button>
-          <span class="dp-month-year">
-            <button class="dp-header-btn" data-action="dp-select-month" id="dpMonthBtn" type="button"></button>
-            <button class="dp-header-btn" data-action="dp-select-year" id="dpYearBtn" type="button"></button>
-          </span>
-          <button class="dp-nav-btn" data-action="dp-next" type="button">&gt;</button>
+      <div class="date-dropdowns-row">
+        <div class="date-select-field">
+          <label class="date-label">Years</label>
+          <div class="select-wrapper">
+            <button class="date-number-trigger" data-action="toggle-date-number-dropdown" data-field="years" type="button">
+              <span id="dateAddYearsText">${dateAddYears}</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="date-number-menu" data-field="years" hidden>
+              ${renderNumberOptions(0, 100, dateAddYears)}
+            </div>
+          </div>
         </div>
-        <div class="dp-weekdays">
-          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+        <div class="date-select-field">
+          <label class="date-label">Months</label>
+          <div class="select-wrapper">
+            <button class="date-number-trigger" data-action="toggle-date-number-dropdown" data-field="months" type="button">
+              <span id="dateAddMonthsText">${dateAddMonths}</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="date-number-menu" data-field="months" hidden>
+              ${renderNumberOptions(0, 100, dateAddMonths)}
+            </div>
+          </div>
         </div>
-        <div class="dp-days" id="dpDaysGrid"></div>
+        <div class="date-select-field">
+          <label class="date-label">Days</label>
+          <div class="select-wrapper">
+            <button class="date-number-trigger" data-action="toggle-date-number-dropdown" data-field="days" type="button">
+              <span id="dateAddDaysText">${dateAddDays}</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="date-number-menu" data-field="days" hidden>
+              ${renderNumberOptions(0, 100, dateAddDays)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="date-input-group">
+        <label class="date-label">Date will be</label>
+        <button class="date-picker-trigger" disabled type="button">
+          <span id="dateResult">${formatDateString(addOrSubtractDate(dateFrom, dateAddYears, dateAddMonths, dateAddDays, dateAddSubOp))}</span>
+          <svg class="date-calendar-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+        </button>
+      </div>
+
+      <div class="date-calendar-row">
+        <div class="date-picker-dialog" id="datePickerDialog">
+          <div class="dp-header">
+            <button class="dp-nav-btn" data-action="dp-prev" type="button">&lt;</button>
+            <span class="dp-month-year">
+              <button class="dp-header-btn" data-action="dp-select-month" id="dpMonthBtn" type="button"></button>
+              <button class="dp-header-btn" data-action="dp-select-year" id="dpYearBtn" type="button"></button>
+            </span>
+            <button class="dp-nav-btn" data-action="dp-next" type="button">&gt;</button>
+          </div>
+          <div class="dp-weekdays">
+            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+          </div>
+          <div class="dp-days" id="dpDaysGrid"></div>
+        </div>
+
+        <div class="date-result-calendar" id="dateResultCalendar">
+          <div class="dp-header">
+            <button class="dp-nav-btn" data-action="result-dp-prev" type="button">&lt;</button>
+            <span class="dp-month-year">
+              <span class="dp-header-btn" id="resultDpMonthBtn"></span>
+              <span class="dp-header-btn" id="resultDpYearBtn"></span>
+            </span>
+            <button class="dp-nav-btn" data-action="result-dp-next" type="button">&gt;</button>
+          </div>
+          <div class="dp-weekdays">
+            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+          </div>
+          <div class="dp-days" id="resultDpDaysGrid"></div>
+        </div>
       </div>
     </div>
   `;
-}
 
+  const calculated = addOrSubtractDate(dateFrom, dateAddYears, dateAddMonths, dateAddDays, dateAddSubOp);
+  resultDpMonth = calculated.getMonth();
+  resultDpYear = calculated.getFullYear();
+  renderResultCalendar();
+
+  activePicker = 'from';
+  dpCurrentMonth = dateFrom.getMonth();
+  dpCurrentYear = dateFrom.getFullYear();
+  calendarView = 'days';
+  renderCalendarGrid();
+}
 function formatDateString(date) {
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -492,12 +609,65 @@ function addOrSubtractDate(baseDate, years, months, days, operation) {
   return result;
 }
 
-function renderSelectOptions(min, max, selectedVal) {
+function renderNumberOptions(min, max, selectedVal) {
   let html = '';
   for (let i = min; i <= max; i++) {
-    html += `<option value="${i}" ${i === selectedVal ? 'selected' : ''}>${i}</option>`;
+    html += `<button class="date-number-item ${i === selectedVal ? 'is-selected' : ''}" data-action="select-date-number" data-value="${i}" type="button">${i}</button>`;
   }
   return html;
+}
+
+function renderResultCalendar() {
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const monthBtn = document.getElementById('resultDpMonthBtn');
+  const yearBtn = document.getElementById('resultDpYearBtn');
+  const daysGrid = document.getElementById('resultDpDaysGrid');
+  if (!monthBtn || !yearBtn || !daysGrid) return;
+
+  const calculated = addOrSubtractDate(dateFrom, dateAddYears, dateAddMonths, dateAddDays, dateAddSubOp);
+
+  monthBtn.textContent = monthNames[resultDpMonth];
+  yearBtn.textContent = resultDpYear;
+
+  daysGrid.innerHTML = '';
+
+  const firstDay = new Date(resultDpYear, resultDpMonth, 1).getDay();
+  const numDays = new Date(resultDpYear, resultDpMonth + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const emptyCell = document.createElement('span');
+    emptyCell.className = 'dp-empty';
+    daysGrid.appendChild(emptyCell);
+  }
+
+  for (let day = 1; day <= numDays; day++) {
+    const dayBtn = document.createElement('button');
+    dayBtn.type = 'button';
+    dayBtn.className = 'dp-day-btn';
+    dayBtn.textContent = day;
+    dayBtn.disabled = true;
+
+    const isSelected = calculated.getDate() === day &&
+                       calculated.getMonth() === resultDpMonth &&
+                       calculated.getFullYear() === resultDpYear;
+    if (isSelected) {
+      dayBtn.classList.add('is-selected');
+    }
+
+    const today = new Date();
+    const isToday = today.getDate() === day &&
+                    today.getMonth() === resultDpMonth &&
+                    today.getFullYear() === resultDpYear;
+    if (isToday) {
+      dayBtn.classList.add('is-today');
+    }
+
+    daysGrid.appendChild(dayBtn);
+  }
 }
 
 function updateDateAddSubResult() {
@@ -506,6 +676,9 @@ function updateDateAddSubResult() {
     if (dateSubMode === 'add-sub') {
       const calculated = addOrSubtractDate(dateFrom, dateAddYears, dateAddMonths, dateAddDays, dateAddSubOp);
       resultEl.textContent = formatDateString(calculated);
+      resultDpMonth = calculated.getMonth();
+      resultDpYear = calculated.getFullYear();
+      renderResultCalendar();
     } else {
       resultEl.textContent = calculateDateDifference(dateFrom, dateTo);
     }
@@ -619,10 +792,20 @@ function renderCalendarGrid() {
           dateTo = selected;
           document.getElementById('dateToText').textContent = formatDateString(dateTo);
         }
-        
-        document.getElementById('datePickerDialog').hidden = true;
-        activePicker = null;
-        updateDateDifferenceDisplay();
+
+        if (currentMode === 'date' && dateSubMode === 'add-sub') {
+          const dialog = document.getElementById('datePickerDialog');
+          if (dialog) {
+            dpCurrentMonth = selected.getMonth();
+            dpCurrentYear = selected.getFullYear();
+            renderCalendarGrid();
+          }
+          updateDateDifferenceDisplay();
+        } else {
+          document.getElementById('datePickerDialog').hidden = true;
+          activePicker = null;
+          updateDateDifferenceDisplay();
+        }
       });
 
       daysGrid.appendChild(dayBtn);
@@ -1157,8 +1340,12 @@ async function handleCalculatorAction(action, button) {
     calendarView = 'days';
     const dialog = document.getElementById('datePickerDialog');
     if (dialog) {
-      dialog.hidden = false;
-      renderCalendarGrid();
+      if (currentMode === 'date' && dateSubMode === 'add-sub') {
+        renderCalendarGrid();
+      } else {
+        dialog.hidden = false;
+        renderCalendarGrid();
+      }
     }
     return;
   }
@@ -1174,6 +1361,58 @@ async function handleCalculatorAction(action, button) {
   if (action === 'select-date-submode') {
     dateSubMode = button.dataset.submode;
     renderDateKeypad();
+    return;
+  }
+
+  if (action === 'toggle-date-number-dropdown') {
+    document.querySelectorAll('.date-number-menu').forEach(menu => {
+      if (menu.dataset.field !== button.dataset.field) {
+        menu.hidden = true;
+      }
+    });
+    const menu = document.querySelector(`.date-number-menu[data-field="${button.dataset.field}"]`);
+    if (menu) {
+      menu.hidden = !menu.hidden;
+    }
+    return;
+  }
+
+  if (action === 'select-date-number') {
+    const value = parseInt(button.dataset.value, 10);
+    const menu = button.closest('.date-number-menu');
+    const field = menu.dataset.field;
+    if (field === 'years') {
+      dateAddYears = value;
+      document.getElementById('dateAddYearsText').textContent = value;
+    } else if (field === 'months') {
+      dateAddMonths = value;
+      document.getElementById('dateAddMonthsText').textContent = value;
+    } else if (field === 'days') {
+      dateAddDays = value;
+      document.getElementById('dateAddDaysText').textContent = value;
+    }
+    menu.hidden = true;
+    updateDateAddSubResult();
+    return;
+  }
+
+  if (action === 'result-dp-prev') {
+    resultDpMonth--;
+    if (resultDpMonth < 0) {
+      resultDpMonth = 11;
+      resultDpYear--;
+    }
+    renderResultCalendar();
+    return;
+  }
+
+  if (action === 'result-dp-next') {
+    resultDpMonth++;
+    if (resultDpMonth > 11) {
+      resultDpMonth = 0;
+      resultDpYear++;
+    }
+    renderResultCalendar();
     return;
   }
 
@@ -1475,7 +1714,22 @@ async function handleCalculatorAction(action, button) {
     }
 
     if (action === 'memory-view') {
-      updateDisplay(`Memory: ${memoryValue}`);
+      toggleScientificPanel('memory');
+      return;
+    }
+
+    if (action === 'recall-sci-memory') {
+      const idx = parseInt(button.getAttribute('data-index'));
+      if (!isNaN(idx) && memoryList[idx] !== undefined) {
+        insertValue(String(memoryList[idx]));
+      }
+      return;
+    }
+
+    if (action === 'clear-sci-memory') {
+      memoryList = [];
+      memoryValue = 0;
+      toggleScientificPanel('memory');
       return;
     }
 
@@ -1576,15 +1830,6 @@ keypad.addEventListener('change', (event) => {
   if (target.name === 'dateAddSubOp') {
     dateAddSubOp = target.value;
     updateDateAddSubResult();
-  } else if (target.id === 'dateAddYears') {
-    dateAddYears = parseInt(target.value, 10) || 0;
-    updateDateAddSubResult();
-  } else if (target.id === 'dateAddMonths') {
-    dateAddMonths = parseInt(target.value, 10) || 0;
-    updateDateAddSubResult();
-  } else if (target.id === 'dateAddDays') {
-    dateAddDays = parseInt(target.value, 10) || 0;
-    updateDateAddSubResult();
   }
 });
 
@@ -1636,7 +1881,7 @@ document.addEventListener('click', (event) => {
 
   if (currentMode === 'date') {
     const dialog = document.getElementById('datePickerDialog');
-    if (dialog && !dialog.hidden) {
+    if (dialog && !dialog.hidden && !(dateSubMode === 'add-sub')) {
       const isTriggerClick = event.target.closest('.date-picker-trigger');
       const isDialogClick = event.target.closest('.date-picker-dialog');
       if (!isTriggerClick && !isDialogClick) {
@@ -1653,6 +1898,14 @@ document.addEventListener('click', (event) => {
         menu.hidden = true;
       }
     }
+
+    document.querySelectorAll('.date-number-menu:not([hidden])').forEach(numberMenu => {
+      const isTrigger = event.target.closest(`.date-number-trigger[data-field="${numberMenu.dataset.field}"]`);
+      const isMenu = event.target.closest(`.date-number-menu[data-field="${numberMenu.dataset.field}"]`);
+      if (!isTrigger && !isMenu) {
+        numberMenu.hidden = true;
+      }
+    });
   }
 });
 
@@ -1680,6 +1933,1012 @@ window.addEventListener('keydown', (event) => {
   }
 });
 
+
 loadTheme();
 loadAccent();
 updateDisplay();
+
+// ==========================================
+// Graphing Mode Logic
+// ==========================================
+let graphCanvas = null;
+let graphCtx = null;
+let graphInitialized = false;
+
+let graphOffsetX = 0;
+let graphOffsetY = 0;
+let graphScale = 50; // pixels per unit
+let isDraggingGraph = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let isTracing = false;
+let currentMouseX = 0;
+let currentMouseY = 0;
+let isMouseInCanvas = false;
+let currentAngleUnit = 'radians';
+let graphLineWidth = 2;
+
+function initGraphCanvas() {
+  if (graphInitialized) {
+    resizeGraphCanvas();
+    return;
+  }
+  
+  graphCanvas = document.getElementById('graphCanvas');
+  if (!graphCanvas) return;
+  
+  graphCtx = graphCanvas.getContext('2d');
+  
+  // Setup interactions
+  graphCanvas.addEventListener('mousedown', onGraphMouseDown);
+  window.addEventListener('mousemove', onGraphMouseMove);
+  window.addEventListener('mouseup', onGraphMouseUp);
+  graphCanvas.addEventListener('wheel', onGraphWheel, { passive: false });
+  
+  // Resize observer to handle dynamic sizing
+  const resizeObserver = new ResizeObserver(() => {
+    if (currentMode === 'graphing') {
+      resizeGraphCanvas();
+    }
+  });
+  resizeObserver.observe(graphCanvas.parentElement);
+  
+  // Buttons
+  document.getElementById('zoomInBtn')?.addEventListener('click', () => zoomGraph(1.5, graphCanvas.width / 2, graphCanvas.height / 2));
+  document.getElementById('zoomOutBtn')?.addEventListener('click', () => zoomGraph(1 / 1.5, graphCanvas.width / 2, graphCanvas.height / 2));
+  document.getElementById('recenterBtn')?.addEventListener('click', recenterGraph);
+  
+  document.getElementById('traceBtn')?.addEventListener('click', () => {
+    isTracing = !isTracing;
+    const traceBtn = document.getElementById('traceBtn');
+    if (traceBtn) traceBtn.classList.toggle('is-active', isTracing);
+    
+    if (isTracing) {
+      graphCanvas.style.cursor = 'none';
+    } else {
+      graphCanvas.style.cursor = 'grab';
+    }
+    drawGraph();
+  });
+
+  graphCanvas.addEventListener('mouseenter', () => {
+    isMouseInCanvas = true;
+  });
+  graphCanvas.addEventListener('mouseleave', () => {
+    isMouseInCanvas = false;
+    drawGraph();
+  });
+  
+  graphInitialized = true;
+  recenterGraph(); // Also handles initial resize & draw
+}
+
+function resizeGraphCanvas() {
+  if (!graphCanvas) return;
+  const rect = graphCanvas.parentElement.getBoundingClientRect();
+  graphCanvas.width = rect.width;
+  graphCanvas.height = rect.height;
+  drawGraph();
+}
+
+function onGraphMouseDown(e) {
+  isDraggingGraph = true;
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  if (!isTracing) graphCanvas.style.cursor = 'grabbing';
+}
+
+function onGraphMouseMove(e) {
+  if (e.target === graphCanvas) {
+    isMouseInCanvas = true;
+    const rect = graphCanvas.getBoundingClientRect();
+    currentMouseX = e.clientX - rect.left;
+    currentMouseY = e.clientY - rect.top;
+  } else {
+    isMouseInCanvas = false;
+  }
+
+  if (isDraggingGraph) {
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    graphOffsetX += dx;
+    graphOffsetY += dy;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+  }
+  
+  if (isDraggingGraph || isTracing) {
+    drawGraph();
+  }
+}
+
+function onGraphMouseUp(e) {
+  if (isDraggingGraph) {
+    isDraggingGraph = false;
+    if (!isTracing) graphCanvas.style.cursor = 'grab';
+  }
+}
+
+function onGraphWheel(e) {
+  e.preventDefault();
+  const rect = graphCanvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+  
+  const zoomFactor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+  zoomGraph(zoomFactor, mouseX, mouseY);
+}
+
+function zoomGraph(factor, centerX, centerY) {
+  const prevScale = graphScale;
+  graphScale *= factor;
+  
+  // Constrain zoom
+  if (graphScale < 0.05) graphScale = 0.05;
+  if (graphScale > 5000) graphScale = 5000;
+  
+  const actualFactor = graphScale / prevScale;
+  
+  // Adjust offset so we zoom towards the center point
+  graphOffsetX = centerX - (centerX - graphOffsetX) * actualFactor;
+  graphOffsetY = centerY - (centerY - graphOffsetY) * actualFactor;
+  
+  drawGraph();
+}
+
+function recenterGraph() {
+  if (!graphCanvas) return;
+  graphOffsetX = graphCanvas.width / 2;
+  graphOffsetY = graphCanvas.height / 2;
+  graphScale = 50;
+  drawGraph();
+}
+
+function drawGraph() {
+  if (!graphCtx || !graphCanvas) return;
+  
+  const width = graphCanvas.width;
+  const height = graphCanvas.height;
+  
+  // Clear canvas
+  graphCtx.clearRect(0, 0, width, height);
+  
+  // Get computed styles for theming
+  const isDarkMode = root.getAttribute('data-theme') === 'dark';
+  const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+  const majorGridColor = isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)';
+  const axisColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(15, 23, 42, 0.8)';
+  const textColor = isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(15, 23, 42, 0.9)';
+  
+  graphCtx.lineWidth = 1;
+  
+  // Calculate view bounds in math coordinates
+  const minX = -graphOffsetX / graphScale;
+  const maxX = (width - graphOffsetX) / graphScale;
+  const minY = -(height - graphOffsetY) / graphScale;
+  const maxY = graphOffsetY / graphScale;
+  
+  // Dynamic grid step based on scale
+  let step = 1;
+  let majorStep = 5;
+  
+  // Calculate ideal unit spacing (about 50 pixels)
+  const idealSpacing = 50 / graphScale;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(idealSpacing)));
+  const normalized = idealSpacing / magnitude;
+  
+  if (normalized < 1.5) {
+    step = magnitude * 1;
+  } else if (normalized < 3.5) {
+    step = magnitude * 2;
+  } else if (normalized < 7.5) {
+    step = magnitude * 5;
+  } else {
+    step = magnitude * 10;
+  }
+  
+  majorStep = step * 5;
+
+  // Draw Grid
+  graphCtx.beginPath();
+  for (let x = Math.floor(minX / step) * step; x <= maxX; x += step) {
+    const canvasX = graphOffsetX + x * graphScale;
+    graphCtx.moveTo(canvasX, 0);
+    graphCtx.lineTo(canvasX, height);
+  }
+  for (let y = Math.floor(minY / step) * step; y <= maxY; y += step) {
+    const canvasY = graphOffsetY - y * graphScale;
+    graphCtx.moveTo(0, canvasY);
+    graphCtx.lineTo(width, canvasY);
+  }
+  graphCtx.strokeStyle = gridColor;
+  graphCtx.stroke();
+  
+  // Draw Coordinate Numbers
+  graphCtx.fillStyle = textColor;
+  graphCtx.font = "italic 13px 'Inter', sans-serif";
+  
+  graphCtx.textAlign = 'center';
+  graphCtx.textBaseline = 'top';
+  for (let x = Math.floor(minX / majorStep) * majorStep; x <= maxX; x += majorStep) {
+    if (x === 0) continue;
+    const canvasX = graphOffsetX + x * graphScale;
+    // Keep labels slightly below the X axis
+    graphCtx.fillText(x.toString(), canvasX, graphOffsetY + 8);
+  }
+  
+  graphCtx.textAlign = 'right';
+  graphCtx.textBaseline = 'middle';
+  for (let y = Math.floor(minY / majorStep) * majorStep; y <= maxY; y += majorStep) {
+    if (y === 0) continue;
+    const canvasY = graphOffsetY - y * graphScale;
+    // Keep labels slightly to the left of the Y axis
+    graphCtx.fillText(y.toString(), graphOffsetX - 8, canvasY);
+  }
+  
+  // Draw Axes
+  graphCtx.beginPath();
+  // X Axis
+  graphCtx.moveTo(0, graphOffsetY);
+  graphCtx.lineTo(width, graphOffsetY);
+  // Y Axis
+  graphCtx.moveTo(graphOffsetX, 0);
+  graphCtx.lineTo(graphOffsetX, height);
+  
+  graphCtx.strokeStyle = axisColor;
+  graphCtx.lineWidth = graphLineWidth;
+  graphCtx.stroke();
+  
+  // Draw Axis Arrows
+  graphCtx.beginPath();
+  // Y Axis arrow (top)
+  graphCtx.moveTo(graphOffsetX - 4, 10);
+  graphCtx.lineTo(graphOffsetX, 0);
+  graphCtx.lineTo(graphOffsetX + 4, 10);
+  // X Axis arrow (right)
+  graphCtx.moveTo(width - 10, graphOffsetY - 4);
+  graphCtx.lineTo(width, graphOffsetY);
+  graphCtx.lineTo(width - 10, graphOffsetY + 4);
+  graphCtx.strokeStyle = axisColor;
+  graphCtx.stroke();
+  
+  // Labels
+  graphCtx.fillStyle = textColor;
+  graphCtx.font = "italic 14px 'Inter', sans-serif";
+  
+  // Origin '0'
+  graphCtx.fillText("0", graphOffsetX - 12, graphOffsetY + 16);
+  // 'x' label
+  graphCtx.fillText("x", width - 15, graphOffsetY + 20);
+  // 'y' label
+  graphCtx.fillText("y", graphOffsetX - 15, 15);
+
+  // Plot active expressions
+  if (typeof activeExpressions !== 'undefined') {
+    activeExpressions.forEach((item, index) => {
+      plotExpression(item.text, item.color);
+    });
+  }
+  
+  if (isTracing && isMouseInCanvas && activeExpressions.length > 0) {
+    const mathX = (currentMouseX - graphOffsetX) / graphScale;
+    const mathY = -(currentMouseY - graphOffsetY) / graphScale;
+    
+    let closestExpr = null;
+    let closestYVal = null;
+    let closestDist = Infinity;
+    let closestColor = null;
+
+    activeExpressions.forEach((item, index) => {
+      let cleanExpr = item.text.replace(/^\s*y\s*=\s*/i, '');
+      if (!cleanExpr.trim()) return;
+      const jsExpr = mathToJS(cleanExpr);
+      try {
+        const fn = new Function('x', 
+          'var PI=Math.PI,E=Math.E,sin=Math.sin,cos=Math.cos,tan=Math.tan,' +
+          'abs=Math.abs,sqrt=Math.sqrt,log=Math.log10,ln=Math.log,' +
+          'pow=Math.pow,exp=Math.exp,ceil=Math.ceil,floor=Math.floor,round=Math.round;' +
+          'return ' + jsExpr + ';'
+        );
+        const yVal = fn(mathX);
+        if (!isNaN(yVal) && isFinite(yVal)) {
+          const dist = Math.abs(yVal - mathY);
+          if (dist < closestDist) {
+            closestDist = dist;
+            closestExpr = item.text;
+            closestYVal = yVal;
+            closestColor = item.color;
+          }
+        }
+      } catch (e) {}
+    });
+
+    if (closestYVal !== null) {
+      const snapCanvasX = currentMouseX;
+      const snapCanvasY = graphOffsetY - closestYVal * graphScale;
+
+      // 1. Draw snap dot
+      graphCtx.beginPath();
+      graphCtx.arc(snapCanvasX, snapCanvasY, 5, 0, 2 * Math.PI);
+      graphCtx.fillStyle = closestColor;
+      graphCtx.fill();
+      graphCtx.strokeStyle = 'white';
+      graphCtx.lineWidth = 1.5;
+      graphCtx.stroke();
+
+      // 2. Draw tooltip box to the left
+      const text = `(${mathX.toFixed(1)}, ${closestYVal.toFixed(14)})`;
+      graphCtx.font = "14px 'Inter', sans-serif";
+      const textWidth = graphCtx.measureText(text).width;
+      const rectWidth = textWidth + 24;
+      const rectHeight = 36;
+      const rectX = snapCanvasX - rectWidth - 12;
+      const rectY = snapCanvasY - rectHeight / 2;
+
+      // Draw rounded rectangle
+      graphCtx.beginPath();
+      const radius = 8;
+      if (typeof graphCtx.roundRect === 'function') {
+        graphCtx.roundRect(rectX, rectY, rectWidth, rectHeight, radius);
+      } else {
+        graphCtx.rect(rectX, rectY, rectWidth, rectHeight);
+      }
+      graphCtx.fillStyle = 'rgba(30, 30, 30, 0.9)';
+      graphCtx.fill();
+      graphCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      graphCtx.lineWidth = 1;
+      graphCtx.stroke();
+
+      // Draw text
+      graphCtx.fillStyle = 'white';
+      graphCtx.textAlign = 'center';
+      graphCtx.textBaseline = 'middle';
+      graphCtx.fillText(text, rectX + rectWidth / 2, rectY + rectHeight / 2);
+
+      // 3. Draw trace cursor at snapped position
+      drawTraceCursor(snapCanvasX, snapCanvasY);
+    } else {
+      drawTraceCursor(currentMouseX, currentMouseY);
+    }
+  } else if (isTracing && isMouseInCanvas) {
+    drawTraceCursor(currentMouseX, currentMouseY);
+  }
+  
+  // Update settings inputs if open
+  if (typeof updateGraphSettingsInputs === 'function') {
+    updateGraphSettingsInputs();
+  }
+}
+
+function drawTraceCursor(x, y) {
+  graphCtx.save();
+  graphCtx.beginPath();
+  graphCtx.moveTo(x, y);
+  graphCtx.lineTo(x, y + 17);
+  graphCtx.lineTo(x + 4, y + 13);
+  graphCtx.lineTo(x + 7, y + 20);
+  graphCtx.lineTo(x + 10, y + 19);
+  graphCtx.lineTo(x + 7, y + 12);
+  graphCtx.lineTo(x + 12, y + 12);
+  graphCtx.closePath();
+
+  graphCtx.fillStyle = 'white';
+  graphCtx.fill();
+  
+  graphCtx.strokeStyle = 'black';
+  graphCtx.lineWidth = 1.5;
+  graphCtx.stroke();
+  graphCtx.restore();
+}
+
+// Logo cross toggle — each mouseenter flips between ≠ (cross) and = (no cross)
+// The state persists after cursor leaves, toggling again on next hover
+const logoEl = document.querySelector('.logo');
+if (logoEl) {
+  logoEl.addEventListener('mouseenter', () => {
+    logoEl.classList.toggle('logo-equals-only');
+  });
+}
+
+// Graph Settings logic
+let isSettingsPanelOpen = false;
+
+function initGraphSettings() {
+  const settingsBtn = document.getElementById('graphSettingsBtn');
+  const settingsPanel = document.getElementById('graphSettingsPanel');
+  if (!settingsBtn || !settingsPanel) return;
+  
+  settingsBtn.addEventListener('click', () => {
+    isSettingsPanelOpen = !isSettingsPanelOpen;
+    settingsPanel.style.display = isSettingsPanelOpen ? 'flex' : 'none';
+    if (isSettingsPanelOpen) {
+      updateGraphSettingsInputs();
+    }
+  });
+  
+  // Window Inputs
+  const inputs = ['xMinInput', 'xMaxInput', 'yMinInput', 'yMaxInput'].map(id => document.getElementById(id));
+  
+  function applyWindowInputs() {
+    if (!graphCanvas) return;
+    const xMin = parseFloat(inputs[0].value);
+    const xMax = parseFloat(inputs[1].value);
+    const yMin = parseFloat(inputs[2].value);
+    const yMax = parseFloat(inputs[3].value);
+    
+    if (isNaN(xMin) || isNaN(xMax) || isNaN(yMin) || isNaN(yMax)) return;
+    if (xMin >= xMax || yMin >= yMax) return;
+    
+    // Isotropic scaling based on X range
+    const width = graphCanvas.width;
+    const height = graphCanvas.height;
+    
+    graphScale = width / (xMax - xMin);
+    graphOffsetX = -xMin * graphScale;
+    
+    // Recenter Y based on provided min/max bounds
+    const yCenter = (yMin + yMax) / 2;
+    graphOffsetY = height / 2 + yCenter * graphScale;
+    
+    drawGraph();
+  }
+  
+  inputs.forEach(input => {
+    if (input) {
+      input.addEventListener('change', applyWindowInputs);
+      input.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') applyWindowInputs();
+      });
+    }
+  });
+  
+  // Reset view
+  document.getElementById('resetViewBtn')?.addEventListener('click', () => {
+    recenterGraph();
+    updateGraphSettingsInputs();
+  });
+  
+  // Unit Toggles
+  const unitGroup = document.getElementById('angleUnitGroup');
+  if (unitGroup) {
+    unitGroup.addEventListener('click', (e) => {
+      if (e.target.classList.contains('toggle-btn')) {
+        Array.from(unitGroup.children).forEach(c => c.classList.remove('is-active'));
+        e.target.classList.add('is-active');
+        currentAngleUnit = e.target.getAttribute('data-value');
+      }
+    });
+  }
+  
+  // Line Thickness - Custom Dropdown
+  const dropdown = document.getElementById('lineThicknessDropdown');
+  if (dropdown) {
+    const trigger = dropdown.querySelector('.custom-select-trigger');
+    const options = dropdown.querySelectorAll('.custom-select-option');
+    const triggerPreview = trigger.querySelector('.line-preview');
+    
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('is-open');
+    });
+    
+    options.forEach(option => {
+      option.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const val = parseInt(option.getAttribute('data-value'));
+        graphLineWidth = val;
+        
+        // Update selected state
+        options.forEach(o => o.classList.remove('is-selected'));
+        option.classList.add('is-selected');
+        
+        // Update trigger preview
+        triggerPreview.setAttribute('data-thickness', val.toString());
+        
+        // Close dropdown
+        dropdown.classList.remove('is-open');
+        
+        drawGraph();
+      });
+    });
+    
+    // Close on outside click
+    document.addEventListener('click', () => {
+      dropdown.classList.remove('is-open');
+    });
+  }
+}
+
+function updateGraphSettingsInputs() {
+  if (!isSettingsPanelOpen || !graphCanvas) return;
+  const width = graphCanvas.width;
+  const height = graphCanvas.height;
+  
+  const minX = -graphOffsetX / graphScale;
+  const maxX = (width - graphOffsetX) / graphScale;
+  const minY = -(height - graphOffsetY) / graphScale;
+  const maxY = graphOffsetY / graphScale;
+  
+  const xMinEl = document.getElementById('xMinInput');
+  const xMaxEl = document.getElementById('xMaxInput');
+  const yMinEl = document.getElementById('yMinInput');
+  const yMaxEl = document.getElementById('yMaxInput');
+  
+  // Only update if not currently focused to avoid messing with user typing
+  if (xMinEl && document.activeElement !== xMinEl) xMinEl.value = minX.toFixed(4);
+  if (xMaxEl && document.activeElement !== xMaxEl) xMaxEl.value = maxX.toFixed(4);
+  if (yMinEl && document.activeElement !== yMinEl) yMinEl.value = minY.toFixed(4);
+  if (yMaxEl && document.activeElement !== yMaxEl) yMaxEl.value = maxY.toFixed(4);
+}
+
+// ==========================================
+// Graphing Calculator Function Plotting Logic
+// ==========================================
+let activeExpressions = [];
+
+function getExpressionColor(index) {
+  const colors = [
+    '#3b82f6', '#06b6d4', '#a855f7', '#22c55e', '#10b981',
+    '#ef4444', '#ec4899', '#f43f5e', '#f59e0b', '#f97316'
+  ];
+  return colors[index % colors.length];
+}
+
+initGraphSettings();
+initGraphTabs();
+initFxKeypad();
+
+function mathToJS(expr) {
+  let jsExpr = expr
+    .replace(/π/g, 'Math.PI')
+    .replace(/\be\b/g, 'Math.E')
+    .replace(/sin\(/g, 'Math.sin(')
+    .replace(/cos\(/g, 'Math.cos(')
+    .replace(/tan\(/g, 'Math.tan(')
+    .replace(/abs\(/g, 'Math.abs(')
+    .replace(/sqrt\(/g, 'Math.sqrt(')
+    .replace(/log\(/g, 'Math.log10(')
+    .replace(/ln\(/g, 'Math.log(')
+    .replace(/²/g, '**2')
+    .replace(/³/g, '**3')
+    .replace(/⁻¹/g, '**(-1)')
+    .replace(/\(-\)/g, '-');
+    
+  jsExpr = jsExpr.replace(/\^/g, '**');
+
+  jsExpr = jsExpr.replace(/(\d+)([a-zA-Z\(])/g, '$1*$2');
+  jsExpr = jsExpr.replace(/(\))([a-zA-Z0-9\(])/g, '$1*$2');
+
+  return jsExpr;
+}
+
+function plotExpression(expr, color) {
+  let cleanExpr = expr.replace(/^\s*y\s*=\s*/i, '');
+  if (!cleanExpr.trim()) return;
+
+  let inequality = null;
+  let inequalitySide = ''; // 'below' or 'above'
+  
+  if (cleanExpr.includes('<=')) {
+    inequality = '<=';
+    inequalitySide = 'below';
+  } else if (cleanExpr.includes('>=')) {
+    inequality = '>=';
+    inequalitySide = 'above';
+  } else if (cleanExpr.includes('<')) {
+    inequality = '<';
+    inequalitySide = 'below';
+  } else if (cleanExpr.includes('>')) {
+    inequality = '>';
+    inequalitySide = 'above';
+  }
+
+  let formula = cleanExpr;
+  if (inequality) {
+    const parts = cleanExpr.split(inequality);
+    if (parts[0].trim() === 'y') {
+      formula = parts[1];
+    } else {
+      formula = parts[0];
+      if (inequalitySide === 'above') inequalitySide = 'below';
+      else inequalitySide = 'above';
+    }
+  }
+
+  const jsExpr = mathToJS(formula);
+  
+  let fn;
+  try {
+    fn = new Function('x', 
+      'var PI=Math.PI,E=Math.E,sin=Math.sin,cos=Math.cos,tan=Math.tan,' +
+      'asin=Math.asin,acos=Math.acos,atan=Math.atan,' +
+      'sinh=Math.sinh,cosh=Math.cosh,tanh=Math.tanh,' +
+      'asinh=Math.asinh,acosh=Math.acosh,atanh=Math.atanh,' +
+      'abs=Math.abs,sqrt=Math.sqrt,log=Math.log10,ln=Math.log,' +
+      'sec=function(a){return 1/Math.cos(a);},csc=function(a){return 1/Math.sin(a);},' +
+      'cot=function(a){return 1/Math.tan(a);},asec=function(a){return Math.acos(1/a);},' +
+      'acsc=function(a){return Math.asin(1/a);},acot=function(a){return Math.atan(1/a);},' +
+      'pow=Math.pow,exp=Math.exp,ceil=Math.ceil,floor=Math.floor,round=Math.round;' +
+      'return ' + jsExpr + ';'
+    );
+  } catch (e) {
+    return;
+  }
+
+  const width = graphCanvas.width;
+  const height = graphCanvas.height;
+
+  // Collect points
+  const points = [];
+  for (let canvasX = 0; canvasX <= width; canvasX++) {
+    const mathX = (canvasX - graphOffsetX) / graphScale;
+    let mathY;
+    try {
+      mathY = fn(mathX);
+    } catch (e) {
+      points.push({ x: canvasX, y: null });
+      continue;
+    }
+    
+    if (isNaN(mathY) || !isFinite(mathY)) {
+      points.push({ x: canvasX, y: null });
+      continue;
+    }
+    
+    const canvasY = graphOffsetY - mathY * graphScale;
+    points.push({ x: canvasX, y: canvasY });
+  }
+
+  // Draw the boundary line
+  graphCtx.beginPath();
+  let first = true;
+  points.forEach(pt => {
+    if (pt.y === null || pt.y < -height || pt.y > height * 2) {
+      first = true;
+    } else {
+      if (first) {
+        graphCtx.moveTo(pt.x, pt.y);
+        first = false;
+      } else {
+        graphCtx.lineTo(pt.x, pt.y);
+      }
+    }
+  });
+
+  graphCtx.strokeStyle = color;
+  graphCtx.lineWidth = Math.max(1.5, graphLineWidth * 1.25);
+  if (inequality === '<' || inequality === '>') {
+    graphCtx.setLineDash([6, 6]);
+  } else {
+    graphCtx.setLineDash([]);
+  }
+  graphCtx.stroke();
+  graphCtx.setLineDash([]); // Reset line dash
+
+  // Draw shaded region if inequality
+  if (inequalitySide) {
+    graphCtx.beginPath();
+    let firstFill = true;
+    points.forEach(pt => {
+      if (pt.y !== null) {
+        if (firstFill) {
+          graphCtx.moveTo(pt.x, pt.y);
+          firstFill = false;
+        } else {
+          graphCtx.lineTo(pt.x, pt.y);
+        }
+      }
+    });
+
+    if (!firstFill) {
+      if (inequalitySide === 'below') {
+        graphCtx.lineTo(width, height);
+        graphCtx.lineTo(0, height);
+      } else {
+        graphCtx.lineTo(width, 0);
+        graphCtx.lineTo(0, 0);
+      }
+      graphCtx.closePath();
+      graphCtx.fillStyle = color.startsWith('#') ? color + '18' : 'rgba(239, 68, 68, 0.09)';
+      graphCtx.fill();
+    }
+  }
+}
+
+function initGraphTabs() {
+  const graphViewBtn = document.getElementById('graphViewBtn');
+  const fxViewBtn = document.getElementById('fxViewBtn');
+  const fxPanel = document.getElementById('fxPanel');
+  const graphCanvas = document.getElementById('graphCanvas');
+  const floatingTr = document.querySelector('.graphing-floating-tr');
+  const floatingBr = document.querySelector('.graphing-floating-br');
+  const settingsPanel = document.getElementById('graphSettingsPanel');
+
+  if (!graphViewBtn || !fxViewBtn) return;
+
+  graphViewBtn.addEventListener('click', () => {
+    graphViewBtn.classList.add('is-active');
+    fxViewBtn.classList.remove('is-active');
+    if (fxPanel) fxPanel.style.display = 'none';
+    if (graphCanvas) graphCanvas.style.display = 'block';
+    if (floatingTr) floatingTr.style.display = 'flex';
+    if (floatingBr) floatingBr.style.display = 'flex';
+    resizeGraphCanvas();
+    drawGraph();
+  });
+
+  fxViewBtn.addEventListener('click', () => {
+    fxViewBtn.classList.add('is-active');
+    graphViewBtn.classList.remove('is-active');
+    if (fxPanel) fxPanel.style.display = 'flex';
+    if (graphCanvas) graphCanvas.style.display = 'none';
+    if (floatingTr) floatingTr.style.display = 'none';
+    if (floatingBr) floatingBr.style.display = 'none';
+    if (settingsPanel) settingsPanel.style.display = 'none';
+  });
+}
+
+function initFxKeypad() {
+  const keypad = document.getElementById('fxKeypad');
+  const input = document.getElementById('fxExpressionInput');
+  const list = document.getElementById('fxExpressionList');
+  if (!keypad || !input) return;
+
+  function insertAtCaret(text) {
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const oldVal = input.value;
+    input.value = oldVal.substring(0, start) + text + oldVal.substring(end);
+    input.selectionStart = input.selectionEnd = start + text.length;
+    input.focus();
+  }
+
+  const trigBtn = document.getElementById('fxTrigBtn');
+  const ineqBtn = document.getElementById('fxIneqBtn');
+  const funcBtn = document.getElementById('fxFuncBtn');
+  
+  const catDropdown = document.getElementById('fxCatDropdown');
+  const gridTrig = document.getElementById('fxGridTrig');
+  const gridIneq = document.getElementById('fxGridIneq');
+  const gridFunc = document.getElementById('fxGridFunc');
+
+  let is2ndActive = false;
+  let isHypActive = false;
+
+  function toggleCatDropdown(activeBtn, targetGrid) {
+    const isCurrentlyActive = activeBtn.classList.contains('is-active');
+    
+    // Deactivate all buttons and hide all grids
+    [trigBtn, ineqBtn, funcBtn].forEach(btn => btn?.classList.remove('is-active'));
+    [gridTrig, gridIneq, gridFunc].forEach(grid => {
+      if (grid) grid.style.display = 'none';
+    });
+
+    if (isCurrentlyActive) {
+      if (catDropdown) catDropdown.style.display = 'none';
+    } else {
+      activeBtn.classList.add('is-active');
+      if (catDropdown) catDropdown.style.display = 'block';
+      if (targetGrid) targetGrid.style.display = 'grid';
+    }
+  }
+
+  trigBtn?.addEventListener('click', () => toggleCatDropdown(trigBtn, gridTrig));
+  ineqBtn?.addEventListener('click', () => toggleCatDropdown(ineqBtn, gridIneq));
+  funcBtn?.addEventListener('click', () => toggleCatDropdown(funcBtn, gridFunc));
+
+  function updateTrigLabels() {
+    const sinBtn = document.querySelector('#fxGridTrig [data-insert*="sin"]');
+    const cosBtn = document.querySelector('#fxGridTrig [data-insert*="cos"]');
+    const tanBtn = document.querySelector('#fxGridTrig [data-insert*="tan"]');
+    const secBtn = document.querySelector('#fxGridTrig [data-insert*="sec"]');
+    const cscBtn = document.querySelector('#fxGridTrig [data-insert*="csc"]');
+    const cotBtn = document.querySelector('#fxGridTrig [data-insert*="cot"]');
+
+    if (!sinBtn || !cosBtn || !tanBtn) return;
+
+    let prefix = "";
+    let suffix = "";
+    if (is2ndActive && isHypActive) {
+      prefix = "a";
+      suffix = "h";
+    } else if (is2ndActive) {
+      prefix = "a";
+    } else if (isHypActive) {
+      suffix = "h";
+    }
+
+    sinBtn.textContent = `${prefix}sin${suffix}`;
+    sinBtn.setAttribute('data-insert', `${prefix}sin${suffix}(`);
+    cosBtn.textContent = `${prefix}cos${suffix}`;
+    cosBtn.setAttribute('data-insert', `${prefix}cos${suffix}(`);
+    tanBtn.textContent = `${prefix}tan${suffix}`;
+    tanBtn.setAttribute('data-insert', `${prefix}tan${suffix}(`);
+
+    if (is2ndActive) {
+      secBtn.textContent = `asec`;
+      secBtn.setAttribute('data-insert', `asec(`);
+      cscBtn.textContent = `acsc`;
+      cscBtn.setAttribute('data-insert', `acsc(`);
+      cotBtn.textContent = `acot`;
+      cotBtn.setAttribute('data-insert', `acot(`);
+    } else {
+      secBtn.textContent = `sec`;
+      secBtn.setAttribute('data-insert', `sec(`);
+      cscBtn.textContent = `csc`;
+      cscBtn.setAttribute('data-insert', `csc(`);
+      cotBtn.textContent = `cot`;
+      cotBtn.setAttribute('data-insert', `cot(`);
+    }
+  }
+
+  catDropdown?.addEventListener('click', (e) => {
+    const key = e.target.closest('.fx-key');
+    if (!key) return;
+
+    const insertText = key.getAttribute('data-insert');
+    const action = key.getAttribute('data-action');
+
+    if (insertText) {
+      insertAtCaret(insertText);
+    } else if (action === 'trig-2nd') {
+      is2ndActive = !is2ndActive;
+      key.classList.toggle('is-active', is2ndActive);
+      updateTrigLabels();
+    } else if (action === 'trig-hyp') {
+      isHypActive = !isHypActive;
+      key.classList.toggle('is-active', isHypActive);
+      updateTrigLabels();
+    }
+  });
+
+  keypad.addEventListener('click', (e) => {
+    const key = e.target.closest('.fx-key');
+    if (!key) return;
+
+    const insertText = key.getAttribute('data-insert');
+    const action = key.getAttribute('data-action');
+
+    if (insertText) {
+      insertAtCaret(insertText);
+    } else if (action === 'clear') {
+      input.value = '';
+      input.focus();
+    } else if (action === 'backspace') {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const oldVal = input.value;
+      if (start === end) {
+        if (start > 0) {
+          input.value = oldVal.substring(0, start - 1) + oldVal.substring(end);
+          input.selectionStart = input.selectionEnd = start - 1;
+        }
+      } else {
+        input.value = oldVal.substring(0, start) + oldVal.substring(end);
+        input.selectionStart = input.selectionEnd = start;
+      }
+      input.focus();
+    } else if (action === '2nd') {
+      key.classList.toggle('is-active');
+    } else if (action === 'enter') {
+      submitFxExpression();
+    }
+  });
+
+  input.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      submitFxExpression();
+    }
+  });
+
+  function submitFxExpression() {
+    const val = input.value.trim();
+    if (!val) return;
+
+    const color = getExpressionColor(activeExpressions.length);
+    activeExpressions.push({ text: val, color: color });
+    renderFxExpressions();
+    input.value = '';
+    drawGraph();
+  }
+
+  function renderFxExpressions() {
+    if (!list) return;
+    list.innerHTML = '';
+    
+    activeExpressions.forEach((item, index) => {
+      const expr = item.text;
+      const color = item.color;
+
+      const row = document.createElement('div');
+      row.className = 'fx-expression-item';
+      row.innerHTML = `
+        <span class="fx-expr-color-dot" style="background-color: ${color};"></span>
+        <span class="fx-expr-text">${expr}</span>
+        <div class="fx-expr-actions">
+          <button type="button" class="fx-expr-color-btn" aria-label="Line color options">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12c0 2.21 1.79 4 4 4h.5c.55 0 1 .45 1 1v.5c0 2.21 1.79 4 4 4z"/><circle cx="7.5" cy="10.5" r="1.5"/><circle cx="11.5" cy="7.5" r="1.5"/><circle cx="16.5" cy="9.5" r="1.5"/></svg>
+          </button>
+          <button type="button" class="fx-expr-delete-btn" aria-label="Delete expression">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        
+        <!-- Color Popover -->
+        <div class="fx-line-options-popover" style="display: none;">
+          <h4 class="popover-title">Line options</h4>
+          <span class="popover-label">Color</span>
+          <div class="popover-colors-grid">
+            ${[
+              '#3b82f6', '#06b6d4', '#a855f7', '#22c55e', '#10b981',
+              '#ef4444', '#ec4899', '#f43f5e', '#f59e0b', '#f97316'
+            ].map(c => `
+              <button type="button" class="color-swatch-btn ${c.toLowerCase() === color.toLowerCase() ? 'is-selected' : ''}" 
+                data-color="${c}" style="background-color: ${c};"></button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // Color Options Button Toggle
+      const colorBtn = row.querySelector('.fx-expr-color-btn');
+      const popover = row.querySelector('.fx-line-options-popover');
+      
+      colorBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        // Close all other open popovers first
+        document.querySelectorAll('.fx-line-options-popover').forEach(pop => {
+          if (pop !== popover) pop.style.display = 'none';
+        });
+
+        const isOpen = popover.style.display === 'flex';
+        popover.style.display = isOpen ? 'none' : 'flex';
+      });
+
+      // Handle Color Swatch Click
+      const swatches = popover.querySelectorAll('.color-swatch-btn');
+      swatches.forEach(swatch => {
+        swatch.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const selectedColor = swatch.getAttribute('data-color');
+          
+          // Update model state
+          item.color = selectedColor;
+
+          // Update swatch selections in UI
+          swatches.forEach(s => s.classList.remove('is-selected'));
+          swatch.classList.add('is-selected');
+
+          // Update left color dot in UI
+          row.querySelector('.fx-expr-color-dot').style.backgroundColor = selectedColor;
+
+          // Close popover
+          popover.style.display = 'none';
+
+          // Redraw graph canvas
+          drawGraph();
+        });
+      });
+
+      // Close popover on document click
+      document.addEventListener('click', () => {
+        popover.style.display = 'none';
+      });
+
+      // Prevent popover clicks from bubble/close
+      popover.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      // Delete Button Event
+      row.querySelector('.fx-expr-delete-btn').addEventListener('click', () => {
+        activeExpressions.splice(index, 1);
+        renderFxExpressions();
+        drawGraph();
+      });
+
+      list.appendChild(row);
+    });
+  }
+}

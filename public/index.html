@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AbyssMath</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <main class="shell">
     <header>
       <div class="logo">
         <div class="logo-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="4" y1="9" x2="20" y2="9"></line>
             <line x1="4" y1="15" x2="20" y2="15"></line>
             <line class="logo-cross-line" x1="10" y1="3" x2="14" y2="21"></line>
@@ -62,49 +67,284 @@
       <aside class="mode-panel" aria-label="Mode selector">
         <h2>Mode</h2>
         <div class="mode-list">
+          <button class="mode-button" type="button" onclick="void(0)">Phone</button>
           <button class="mode-button is-active" data-mode="standard" type="button">Standard</button>
           <button class="mode-button" data-mode="scientific" type="button">Scientific</button>
           <button class="mode-button" data-mode="programming" type="button">Programming</button>
           <button class="mode-button" data-mode="date" type="button">Date Calculations</button>
+          <button class="mode-button" data-mode="graphing" type="button">Graphing</button>
         </div>
       </aside>
 
       <section class="calculator-card" aria-label="Scientific calculator">
-      <div class="display">
-        <div class="expression" id="expression">0</div>
-        <div class="result" id="result"></div>
-      </div>
+        <div class="display">
+          <div class="expression" id="expression">0</div>
+          <div class="result" id="result"></div>
+        </div>
 
-      <div class="keypad" id="keypad">
-        <button data-action="clear" class="key key-secondary">AC</button>
-        <button data-insert="(" class="key key-secondary">( )</button>
-        <button data-insert="%" class="key key-secondary">%</button>
-        <button data-insert="/" class="key key-operator">&divide;</button>
+        <div class="keypad" id="keypad">
+          <button data-action="clear" class="key key-secondary">AC</button>
+          <button data-insert="(" class="key key-secondary">( )</button>
+          <button data-insert="%" class="key key-secondary">%</button>
+          <button data-insert="/" class="key key-operator">&divide;</button>
 
-        <button data-insert="7" class="key">7</button>
-        <button data-insert="8" class="key">8</button>
-        <button data-insert="9" class="key">9</button>
-        <button data-insert="*" class="key key-operator">&times;</button>
+          <button data-insert="7" class="key">7</button>
+          <button data-insert="8" class="key">8</button>
+          <button data-insert="9" class="key">9</button>
+          <button data-insert="*" class="key key-operator">&times;</button>
 
-        <button data-insert="4" class="key">4</button>
-        <button data-insert="5" class="key">5</button>
-        <button data-insert="6" class="key">6</button>
-        <button data-insert="-" class="key key-operator">&minus;</button>
+          <button data-insert="4" class="key">4</button>
+          <button data-insert="5" class="key">5</button>
+          <button data-insert="6" class="key">6</button>
+          <button data-insert="-" class="key key-operator">&minus;</button>
 
-        <button data-insert="1" class="key">1</button>
-        <button data-insert="2" class="key">2</button>
-        <button data-insert="3" class="key">3</button>
-        <button data-insert="+" class="key key-operator">+</button>
+          <button data-insert="1" class="key">1</button>
+          <button data-insert="2" class="key">2</button>
+          <button data-insert="3" class="key">3</button>
+          <button data-insert="+" class="key key-operator">+</button>
 
-        <button data-insert="." class="key">.</button>
-        <button data-insert="0" class="key">0</button>
-        <button data-action="backspace" class="key">C</button>
-        <button data-action="equals" class="key key-equals">=</button>
-      </div>
+          <button data-insert="." class="key">.</button>
+          <button data-insert="0" class="key">0</button>
+          <button data-action="backspace" class="key">C</button>
+          <button data-action="equals" class="key key-equals">=</button>
+        </div>
+      </section>
+
+      <section class="graphing-card" id="graphingCard" aria-label="Graphing Workspace" style="display: none;">
+        <div class="graphing-header">
+          <div class="graphing-header-left">
+            <h2 class="graphing-title">Graphing</h2>
+          </div>
+          <div class="graphing-header-right">
+            <button class="graphing-toggle-btn is-active" id="graphViewBtn" aria-label="Graph" type="button">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3v18h18M3 21l6-6 4 4 8-8" />
+              </svg>
+            </button>
+            <button class="graphing-toggle-btn" id="fxViewBtn" aria-label="Functions" type="button">
+              <span><i>f</i><sub>x</sub></span>
+            </button>
+          </div>
+        </div>
+        <div class="graphing-body">
+          <div class="graphing-floating-tr">
+            <button class="btn btn-circle" id="traceBtn" aria-label="Cursor" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+              </svg>
+            </button>
+            <button class="btn btn-circle" id="graphSettingsBtn" aria-label="Settings" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Graph Settings Panel -->
+          <div id="graphSettingsPanel" class="graph-settings-panel" style="display: none;">
+            <div class="settings-header">
+              <h3>Graph options</h3>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <span class="settings-label">Window</span>
+                <button type="button" class="btn-text" id="resetViewBtn">Reset view</button>
+              </div>
+              <div class="settings-grid">
+                <div class="input-group">
+                  <label for="xMinInput">X-Min</label>
+                  <input type="number" id="xMinInput" step="any">
+                </div>
+                <div class="input-group">
+                  <label for="xMaxInput">X-Max</label>
+                  <input type="number" id="xMaxInput" step="any">
+                </div>
+                <div class="input-group">
+                  <label for="yMinInput">Y-Min</label>
+                  <input type="number" id="yMinInput" step="any">
+                </div>
+                <div class="input-group">
+                  <label for="yMaxInput">Y-Max</label>
+                  <input type="number" id="yMaxInput" step="any">
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <span class="settings-label">Units</span>
+              <div class="toggle-group" id="angleUnitGroup">
+                <button type="button" class="toggle-btn is-active" data-value="radians">Radians</button>
+                <button type="button" class="toggle-btn" data-value="degrees">Degrees</button>
+                <button type="button" class="toggle-btn" data-value="gradians">Gradians</button>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <span class="settings-label">Line thickness</span>
+              <div class="custom-select" id="lineThicknessDropdown">
+                <div class="custom-select-trigger" tabindex="0">
+                  <span class="line-preview" data-thickness="2"></span>
+                  <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+                <div class="custom-select-options">
+                  <div class="custom-select-option" data-value="1">
+                    <span>Thin</span>
+                    <span class="line-preview" data-thickness="1"></span>
+                  </div>
+                  <div class="custom-select-option is-selected" data-value="2">
+                    <span>Medium</span>
+                    <span class="line-preview" data-thickness="2"></span>
+                  </div>
+                  <div class="custom-select-option" data-value="3">
+                    <span>Thick</span>
+                    <span class="line-preview" data-thickness="3"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fx Keypad Panel -->
+          <div id="fxPanel" class="fx-panel" style="display: none;">
+            <div class="fx-expression-bar">
+              <span class="fx-icon"><i>f</i></span>
+              <input type="text" id="fxExpressionInput" class="fx-expression-input" placeholder="Enter an expression">
+            </div>
+            <div class="fx-expression-list" id="fxExpressionList"></div>
+            <div class="fx-categories">
+              <button class="fx-cat-btn" id="fxTrigBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 12A10 10 0 1 1 12 2" />
+                  <path d="M22 2 13 13" />
+                </svg> Trigonometry <svg class="fx-cat-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg></button>
+              <button class="fx-cat-btn" id="fxIneqBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                </svg> Inequalities <svg class="fx-cat-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg></button>
+              <button class="fx-cat-btn" id="fxFuncBtn" type="button"><i>f</i> Function <svg class="fx-cat-chevron"
+                  width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg></button>
+            </div>
+
+            <!-- Category Dropdown Grid -->
+            <div class="fx-cat-dropdown" id="fxCatDropdown" style="display: none;">
+              <!-- Trig Grid -->
+              <div class="fx-dropdown-grid" id="fxGridTrig" style="display: none;">
+                <button class="fx-key fx-key-fn" data-action="trig-2nd">2<sup>nd</sup></button>
+                <button class="fx-key fx-key-fn" data-insert="sin(">sin</button>
+                <button class="fx-key fx-key-fn" data-insert="cos(">cos</button>
+                <button class="fx-key fx-key-fn" data-insert="tan(">tan</button>
+                <button class="fx-key fx-key-fn" data-action="trig-hyp">hyp</button>
+                <button class="fx-key fx-key-fn" data-insert="sec(">sec</button>
+                <button class="fx-key fx-key-fn" data-insert="csc(">csc</button>
+                <button class="fx-key fx-key-fn" data-insert="cot(">cot</button>
+              </div>
+              <!-- Ineq Grid -->
+              <div class="fx-dropdown-grid" id="fxGridIneq" style="display: none;">
+                <button class="fx-key fx-key-fn" data-insert="<">&lt;</button>
+                <button class="fx-key fx-key-fn" data-insert="<=">&le;</button>
+                <button class="fx-key fx-key-fn" data-insert="=">=</button>
+                <button class="fx-key fx-key-fn" data-insert=">=">&ge;</button>
+                <button class="fx-key fx-key-fn" data-insert=">">&gt;</button>
+              </div>
+              <!-- Func Grid -->
+              <div class="fx-dropdown-grid" id="fxGridFunc" style="display: none;">
+                <button class="fx-key fx-key-fn" data-insert="abs(">|x|</button>
+                <button class="fx-key fx-key-fn" data-insert="floor(">⌊x⌋</button>
+                <button class="fx-key fx-key-fn" data-insert="ceil(">⌈x⌉</button>
+              </div>
+            </div>
+            <div class="fx-keypad" id="fxKeypad">
+              <button class="fx-key fx-key-fn" data-action="2nd">2<sup>nd</sup></button>
+              <button class="fx-key fx-key-fn" data-insert="π">π</button>
+              <button class="fx-key fx-key-fn" data-insert="e">e</button>
+              <button class="fx-key fx-key-fn" data-action="clear">C</button>
+              <button class="fx-key fx-key-fn" data-action="backspace">⌫</button>
+
+              <button class="fx-key fx-key-fn" data-insert="²">x²</button>
+              <button class="fx-key fx-key-fn" data-insert="⁻¹">⅟x</button>
+              <button class="fx-key fx-key-fn" data-insert="abs(">|x|</button>
+              <button class="fx-key fx-key-fn" data-insert="x">x</button>
+              <button class="fx-key fx-key-fn" data-insert="y">y</button>
+
+              <button class="fx-key fx-key-fn" data-insert="sqrt(">²√x</button>
+              <button class="fx-key fx-key-fn" data-insert="(">(</button>
+              <button class="fx-key fx-key-fn" data-insert=")">)</button>
+              <button class="fx-key fx-key-fn" data-insert="=">=</button>
+              <button class="fx-key fx-key-op" data-insert="/">÷</button>
+
+              <button class="fx-key fx-key-fn" data-insert="^">x<sup>y</sup></button>
+              <button class="fx-key" data-insert="7">7</button>
+              <button class="fx-key" data-insert="8">8</button>
+              <button class="fx-key" data-insert="9">9</button>
+              <button class="fx-key fx-key-op" data-insert="*">×</button>
+
+              <button class="fx-key fx-key-fn" data-insert="10^">10<sup>x</sup></button>
+              <button class="fx-key" data-insert="4">4</button>
+              <button class="fx-key" data-insert="5">5</button>
+              <button class="fx-key" data-insert="6">6</button>
+              <button class="fx-key fx-key-op" data-insert="-">−</button>
+
+              <button class="fx-key fx-key-fn" data-insert="log(">log</button>
+              <button class="fx-key" data-insert="1">1</button>
+              <button class="fx-key" data-insert="2">2</button>
+              <button class="fx-key" data-insert="3">3</button>
+              <button class="fx-key fx-key-op" data-insert="+">+</button>
+
+              <button class="fx-key fx-key-fn" data-insert="ln(">ln</button>
+              <button class="fx-key fx-key-fn" data-insert="(-)">(-)</button>
+              <button class="fx-key" data-insert="0">0</button>
+              <button class="fx-key" data-insert=".">.</button>
+              <button class="fx-key fx-key-enter" data-action="enter">↵</button>
+            </div>
+          </div>
+
+          <div class="graphing-floating-br">
+            <button class="btn btn-circle" id="zoomInBtn" aria-label="Zoom In" type="button">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <button class="btn btn-circle" id="zoomOutBtn" aria-label="Zoom Out" type="button">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <button class="btn btn-circle" id="recenterBtn" aria-label="Recenter" type="button">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+              </svg>
+            </button>
+          </div>
+          <canvas id="graphCanvas"></canvas>
+        </div>
       </section>
     </section>
   </main>
 
   <script src="app.js"></script>
 </body>
+
 </html>
