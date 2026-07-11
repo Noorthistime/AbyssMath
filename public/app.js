@@ -1980,6 +1980,37 @@ document.addEventListener('click', (event) => {
 window.addEventListener('keydown', (event) => {
   const { key } = event;
 
+  if (currentMode !== 'phone') {
+    let button = null;
+    const modeSel = '.calculator-card';
+    if (/[0-9]/.test(key)) {
+      button = document.querySelector(`${modeSel} .key[data-insert="${key}"]`);
+    } else if (['+', '-', '*', '/', '.', '(', ')', '^', '%'].includes(key)) {
+      button = document.querySelector(`${modeSel} .key[data-insert="${key}"], ${modeSel} .key-sci[data-insert="${key}"]`);
+    } else if (key === 'Enter' || key === '=') {
+      button = document.querySelector(`${modeSel} .key[data-action="equals"]`);
+    } else if (key === 'Backspace') {
+      button = document.querySelector(`${modeSel} .key[data-action="backspace"]`);
+    } else if (key === 'Escape') {
+      button = document.querySelector(`${modeSel} .key[data-action="clear"]`);
+    }
+
+    if (button) {
+      let disableHaptics = false;
+      try {
+        const s = localStorage.getItem('phoneSettings');
+        if (s) disableHaptics = JSON.parse(s).disableHaptics;
+      } catch (e) {}
+      
+      if (!disableHaptics && navigator.vibrate) {
+        navigator.vibrate(12);
+      }
+      
+      button.classList.add('active-click');
+      setTimeout(() => button.classList.remove('active-click'), 100);
+    }
+  }
+
   if (/[0-9]/.test(key) || ['+', '-', '*', '/', '.', '(', ')', '^'].includes(key)) {
     insertValue(key);
     return;

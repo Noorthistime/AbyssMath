@@ -615,8 +615,10 @@ h1 {
   transform: translateY(-1px);
 }
 
-.key:active {
-  transform: translateY(1px) scale(0.99);
+.key:active,
+.key.active-click {
+  transform: translateY(2px) scale(0.90) !important;
+  opacity: 0.75 !important;
 }
 
 .key-secondary,
@@ -2632,8 +2634,10 @@ html[data-theme="light"] .fx-key {
   border-color: rgba(var(--accent-rgb), 0.2);
 }
 
-.fx-key:active {
-  transform: scale(0.96);
+.fx-key:active,
+.fx-key.active-click {
+  transform: translateY(2px) scale(0.90) !important;
+  opacity: 0.75 !important;
 }
 
 .fx-key-fn {
