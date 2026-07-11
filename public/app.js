@@ -261,6 +261,9 @@ function setKeypadMode(mode) {
   document.getElementById('phoneHistoryOverlay')?.classList.remove('is-open');
   document.getElementById('phoneSettingsOverlay')?.classList.remove('is-open');
   document.getElementById('phoneAboutOverlay')?.classList.remove('is-open');
+  if (mode !== 'standard' && mode !== 'scientific' && mode !== 'programming') {
+    if (typeof window.closeStandardHistory === 'function') window.closeStandardHistory();
+  }
 
   const graphingCard = document.getElementById('graphingCard');
   if (graphingCard) {
@@ -3601,5 +3604,137 @@ function initFxKeypad() {
       }, 100);
     }
   });
+
+})();
+
+// ---- Standard History Mode ----
+(function initStandardHistory() {
+  let standardHistory = [];
+  try {
+    standardHistory = JSON.parse(localStorage.getItem('standardHistory') || '[]');
+  } catch (e) {}
+
+  function renderStandardHistory() {
+    const list = document.getElementById('standardHistoryList');
+    if (!list) return;
+
+    if (standardHistory.length === 0) {
+      list.innerHTML = '<div class="standard-history-empty">No history yet</div>';
+      return;
+    }
+
+    list.innerHTML = standardHistory.slice().reverse().map((item, i) => {
+      const idx = standardHistory.length - 1 - i;
+      return `
+        <div class="standard-history-item" data-idx="${idx}">
+          <button class="standard-history-delete-btn" data-idx="${idx}" title="Delete entry" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+          <div class="standard-history-expr">${item.expr}</div>
+          <div class="standard-history-res">${item.result}</div>
+        </div>
+      `;
+    }).join('');
+
+    // Setup click handlers for items
+    list.querySelectorAll('.standard-history-item').forEach(itemEl => {
+      itemEl.addEventListener('click', (e) => {
+        if (e.target.closest('.standard-history-delete-btn')) return;
+        const idx = parseInt(itemEl.dataset.idx, 10);
+        if (standardHistory[idx]) {
+          expression = standardHistory[idx].result;
+          updateDisplay();
+        }
+      });
+    });
+
+    // Setup click handlers for delete buttons
+    list.querySelectorAll('.standard-history-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.idx, 10);
+        standardHistory.splice(idx, 1);
+        localStorage.setItem('standardHistory', JSON.stringify(standardHistory));
+        renderStandardHistory();
+      });
+    });
+  }
+
+  // Intercept standard evaluation to save to standardHistory
+  const originalEvaluateExpression = evaluateExpression;
+  evaluateExpression = async function () {
+    if (currentMode === 'phone' || currentMode === 'date' || currentMode === 'graphing') {
+      return await originalEvaluateExpression();
+    }
+
+    if (!expression.trim()) {
+      updateDisplay('Enter a calculation first.');
+      return;
+    }
+
+    const exprBefore = expression;
+    try {
+      await originalEvaluateExpression();
+      // If result is evaluated successfully and displays in resultEl (or standard output)
+      // wait, in non-phone modes, originalEvaluateExpression sets expression = resultValue.
+      // So expression contains the evaluated result. Let's save standardHistory.
+      const resultValue = expression; 
+      
+      // Prevent saving error messages or duplicates
+      if (resultValue && resultValue !== 'Error' && resultValue !== exprBefore) {
+        // Check duplicate
+        if (standardHistory.length > 0) {
+          const last = standardHistory[standardHistory.length - 1];
+          if (last.expr === exprBefore && last.result === resultValue) return;
+        }
+        standardHistory.push({ expr: exprBefore, result: resultValue });
+        if (standardHistory.length > 100) standardHistory.shift();
+        localStorage.setItem('standardHistory', JSON.stringify(standardHistory));
+        renderStandardHistory();
+      }
+    } catch (e) {
+      // calculation failed
+    }
+  };
+
+  // Toggle Standard History Panel
+  const workspace = document.querySelector('.workspace');
+  const sidebar = document.getElementById('standardHistorySidebar');
+  const btn = document.getElementById('standardHistoryBtn');
+
+  function openStandardHistory() {
+    if (sidebar && workspace) {
+      sidebar.style.display = 'flex';
+      workspace.classList.add('has-history');
+      renderStandardHistory();
+    }
+  }
+
+  function closeStandardHistory() {
+    if (sidebar && workspace) {
+      sidebar.style.display = 'none';
+      workspace.classList.remove('has-history');
+    }
+  }
+
+  btn?.addEventListener('click', () => {
+    if (workspace?.classList.contains('has-history')) {
+      closeStandardHistory();
+    } else {
+      openStandardHistory();
+    }
+  });
+
+  document.getElementById('standardHistoryClearBtn')?.addEventListener('click', () => {
+    standardHistory = [];
+    localStorage.removeItem('standardHistory');
+    renderStandardHistory();
+  });
+
+  // Export closeStandardHistory to global scope so setKeypadMode can call it
+  window.closeStandardHistory = closeStandardHistory;
 
 })();

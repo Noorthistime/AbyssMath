@@ -104,6 +104,14 @@
           </div>
         </div>
         <div class="display">
+          <button class="standard-history-btn" id="standardHistoryBtn" aria-label="History" type="button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 8v4l3 3"></path>
+              <path d="M3.51 9a9 9 0 1 1 0 6"></path>
+              <polyline points="2 9 6 9 6 5"></polyline>
+            </svg>
+          </button>
           <div class="expression" id="expression">0</div>
           <div class="result" id="result"></div>
         </div>
@@ -383,6 +391,20 @@
           </div>
         </div>
       </section>
+
+      <!-- Standard History Sidebar -->
+      <aside class="standard-history-sidebar" id="standardHistorySidebar" style="display: none;">
+        <div class="sidebar-header">
+          <h3>History</h3>
+          <button id="standardHistoryClearBtn" title="Clear History" type="button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="sidebar-content" id="standardHistoryList"></div>
+      </aside>
 
       <section class="graphing-card" id="graphingCard" aria-label="Graphing Workspace" style="display: none;">
         <div class="graphing-header">
