@@ -3247,35 +3247,36 @@ input:checked + .phone-settings-slider:before { transform: translateX(22px); }
 
 /* Responsive adjustments when scientific keypad is open in phone mode */
 .phone-mode.phone-sci-open {
-  padding: 1.2rem 0.8rem 0.8rem 0.8rem !important;
+  padding: 0.8rem 0.6rem 0.6rem 0.6rem !important;
 }
 .phone-mode.phone-sci-open .phone-header {
-  margin-bottom: 0.6rem !important;
+  margin-bottom: 0.4rem !important;
 }
 .phone-mode.phone-sci-open .display {
-  min-height: 70px !important;
-  margin-bottom: 0.8rem !important;
+  min-height: 50px !important;
+  margin-bottom: 0.4rem !important;
+  flex: 1 1 auto !important;
 }
 .phone-mode.phone-sci-open .display .expression {
-  font-size: 1.9rem !important;
+  font-size: 1.8rem !important;
 }
 .phone-mode.phone-sci-open .display .result {
-  font-size: 1.15rem !important;
-  min-height: 1.4rem !important;
+  font-size: 1.1rem !important;
+  min-height: 1.3rem !important;
 }
 .phone-mode.phone-sci-open .phone-scientific-keypad,
 .phone-mode.phone-sci-open .keypad {
-  gap: 0.45rem !important;
-  margin-bottom: 0.45rem !important;
+  gap: 0.4rem !important;
+  margin-bottom: 0.4rem !important;
   padding: 0 !important; /* Stretch back to the bezel edges */
 }
 .phone-mode.phone-sci-open .key-sci {
-  aspect-ratio: 2.1 / 1 !important;
-  font-size: 0.95rem !important;
-  border-radius: 12px !important;
+  aspect-ratio: 2.3 / 1 !important;
+  font-size: 0.9rem !important;
+  border-radius: 10px !important;
 }
 .phone-mode.phone-sci-open .key {
-  aspect-ratio: 1.15 / 1 !important; /* squish slightly vertically so it fits without side padding */
-  font-size: 1.35rem !important;
-  border-radius: 20px !important; /* squircle shape when squished */
+  aspect-ratio: 1.35 / 1 !important; /* squish vertically so it fits perfectly on-screen without side padding */
+  font-size: 1.3rem !important;
+  border-radius: 16px !important; /* squircle capsule shape when squished */
 }
