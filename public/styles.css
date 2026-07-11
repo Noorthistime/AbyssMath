@@ -2990,12 +2990,15 @@ html[data-theme="light"] .fx-cat-dropdown .fx-key {
   height: auto !important;
 }
 .phone-mode .phone-scientific-keypad {
-  display: grid !important;
+  display: none !important;
   grid-template-columns: repeat(4, 1fr) !important;
   grid-template-rows: repeat(3, 1fr) !important;
   width: 100% !important;
   flex: 0 0 auto !important;
   height: auto !important;
+}
+.phone-mode .phone-scientific-keypad.is-visible {
+  display: grid !important;
 }
 
 /* Density */
@@ -3241,3 +3244,36 @@ html[data-theme="light"] .fx-cat-dropdown .fx-key {
 }
 input:checked + .phone-settings-slider { background-color: #d71921; }
 input:checked + .phone-settings-slider:before { transform: translateX(22px); }
+
+/* Responsive adjustments when scientific keypad is open in phone mode */
+.phone-mode.phone-sci-open {
+  padding-top: 1.1rem !important;
+  padding-bottom: 0.8rem !important;
+}
+.phone-mode.phone-sci-open .phone-header {
+  margin-bottom: 0.5rem !important;
+}
+.phone-mode.phone-sci-open .display {
+  min-height: 60px !important;
+  margin-bottom: 0.6rem !important;
+}
+.phone-mode.phone-sci-open .display .expression {
+  font-size: 1.8rem !important;
+}
+.phone-mode.phone-sci-open .display .result {
+  font-size: 1.10rem !important;
+  min-height: 1.4rem !important;
+}
+.phone-mode.phone-sci-open .phone-scientific-keypad,
+.phone-mode.phone-sci-open .keypad {
+  gap: 0.45rem !important;
+  margin-bottom: 0.45rem !important;
+  padding: 0 0.8rem !important;
+}
+.phone-mode.phone-sci-open .key-sci {
+  aspect-ratio: 2.1 / 1 !important;
+  font-size: 0.95rem !important;
+}
+.phone-mode.phone-sci-open .key {
+  font-size: 1.3rem !important;
+}

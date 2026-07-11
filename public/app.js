@@ -249,7 +249,15 @@ function setKeypadMode(mode) {
 
   // Close all phone overlays & hide sci keypad when leaving phone mode
   const phoneSciKeypad = document.getElementById('phoneScientificKeypad');
-  if (phoneSciKeypad) phoneSciKeypad.style.display = mode === 'phone' && phoneSciKeypad.dataset.open === '1' ? 'grid' : 'none';
+  if (phoneSciKeypad) {
+    if (mode === 'phone' && phoneSciKeypad.dataset.open === '1') {
+      phoneSciKeypad.classList.add('is-visible');
+      calculatorCard.classList.add('phone-sci-open');
+    } else {
+      phoneSciKeypad.classList.remove('is-visible');
+      calculatorCard.classList.remove('phone-sci-open');
+    }
+  }
   document.getElementById('phoneHistoryOverlay')?.classList.remove('is-open');
   document.getElementById('phoneSettingsOverlay')?.classList.remove('is-open');
   document.getElementById('phoneAboutOverlay')?.classList.remove('is-open');
@@ -3092,11 +3100,13 @@ function initFxKeypad() {
     const funcBtn = document.getElementById('phoneFunctionsBtn');
     if (sciKeypad) {
       if (s.startExtended) {
-        sciKeypad.style.display = 'grid';
+        sciKeypad.classList.add('is-visible');
+        card?.classList.add('phone-sci-open');
         sciKeypad.dataset.open = '1';
         funcBtn?.classList.add('is-active');
       } else {
-        sciKeypad.style.display = 'none';
+        sciKeypad.classList.remove('is-visible');
+        card?.classList.remove('phone-sci-open');
         sciKeypad.dataset.open = '0';
         funcBtn?.classList.remove('is-active');
       }
