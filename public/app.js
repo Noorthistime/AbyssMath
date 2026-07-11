@@ -162,7 +162,7 @@ function loadAccent() {
 function updateDisplay(message = expression ? 'Press = to calculate' : 'Ready') {
   if (currentMode === 'phone') {
     expressionEl.textContent = expression || '0';
-    
+
     // Evaluate on the fly
     if (!expression) {
       resultEl.textContent = '';
@@ -383,9 +383,9 @@ function renderScientificKeypad() {
     const memItems = memoryList.length === 0
       ? '<div class="sci-mem-empty">No stored memory</div>'
       : memoryList.slice().reverse().map((val, idx) => {
-          const originalIndex = memoryList.length - 1 - idx;
-          return `<button class="sci-mem-item" data-action="recall-sci-memory" data-index="${originalIndex}" type="button">${val}</button>`;
-        }).join('');
+        const originalIndex = memoryList.length - 1 - idx;
+        return `<button class="sci-mem-item" data-action="recall-sci-memory" data-index="${originalIndex}" type="button">${val}</button>`;
+      }).join('');
     overlayHtml = `
       <div class="scientific-overlay-dialog memory-dialog">
         <div class="sci-mem-list">${memItems}</div>
@@ -498,7 +498,7 @@ function renderDateKeypad() {
     return;
   }
 
-      // Add-sub mode - single column, calendars side by side at bottom
+  // Add-sub mode - single column, calendars side by side at bottom
   keypad.innerHTML = `
     <div class="date-calc-container add-sub-layout">
       <div class="date-mode-selector">
@@ -705,16 +705,16 @@ function renderResultCalendar() {
     dayBtn.disabled = true;
 
     const isSelected = calculated.getDate() === day &&
-                       calculated.getMonth() === resultDpMonth &&
-                       calculated.getFullYear() === resultDpYear;
+      calculated.getMonth() === resultDpMonth &&
+      calculated.getFullYear() === resultDpYear;
     if (isSelected) {
       dayBtn.classList.add('is-selected');
     }
 
     const today = new Date();
     const isToday = today.getDate() === day &&
-                    today.getMonth() === resultDpMonth &&
-                    today.getFullYear() === resultDpYear;
+      today.getMonth() === resultDpMonth &&
+      today.getFullYear() === resultDpYear;
     if (isToday) {
       dayBtn.classList.add('is-today');
     }
@@ -822,16 +822,16 @@ function renderCalendarGrid() {
       dayBtn.textContent = day;
 
       const isSelected = selectedDate.getDate() === day &&
-                         selectedDate.getMonth() === dpCurrentMonth &&
-                         selectedDate.getFullYear() === dpCurrentYear;
+        selectedDate.getMonth() === dpCurrentMonth &&
+        selectedDate.getFullYear() === dpCurrentYear;
       if (isSelected) {
         dayBtn.classList.add('is-selected');
       }
 
       const today = new Date();
       const isToday = today.getDate() === day &&
-                      today.getMonth() === dpCurrentMonth &&
-                      today.getFullYear() === dpCurrentYear;
+        today.getMonth() === dpCurrentMonth &&
+        today.getFullYear() === dpCurrentYear;
       if (isToday) {
         dayBtn.classList.add('is-today');
       }
@@ -2031,18 +2031,18 @@ function initGraphCanvas() {
     resizeGraphCanvas();
     return;
   }
-  
+
   graphCanvas = document.getElementById('graphCanvas');
   if (!graphCanvas) return;
-  
+
   graphCtx = graphCanvas.getContext('2d');
-  
+
   // Setup interactions
   graphCanvas.addEventListener('mousedown', onGraphMouseDown);
   window.addEventListener('mousemove', onGraphMouseMove);
   window.addEventListener('mouseup', onGraphMouseUp);
   graphCanvas.addEventListener('wheel', onGraphWheel, { passive: false });
-  
+
   // Resize observer to handle dynamic sizing
   const resizeObserver = new ResizeObserver(() => {
     if (currentMode === 'graphing') {
@@ -2050,17 +2050,17 @@ function initGraphCanvas() {
     }
   });
   resizeObserver.observe(graphCanvas.parentElement);
-  
+
   // Buttons
   document.getElementById('zoomInBtn')?.addEventListener('click', () => zoomGraph(1.5, graphCanvas.width / 2, graphCanvas.height / 2));
   document.getElementById('zoomOutBtn')?.addEventListener('click', () => zoomGraph(1 / 1.5, graphCanvas.width / 2, graphCanvas.height / 2));
   document.getElementById('recenterBtn')?.addEventListener('click', recenterGraph);
-  
+
   document.getElementById('traceBtn')?.addEventListener('click', () => {
     isTracing = !isTracing;
     const traceBtn = document.getElementById('traceBtn');
     if (traceBtn) traceBtn.classList.toggle('is-active', isTracing);
-    
+
     if (isTracing) {
       graphCanvas.style.cursor = 'none';
     } else {
@@ -2076,7 +2076,7 @@ function initGraphCanvas() {
     isMouseInCanvas = false;
     drawGraph();
   });
-  
+
   graphInitialized = true;
   recenterGraph(); // Also handles initial resize & draw
 }
@@ -2114,7 +2114,7 @@ function onGraphMouseMove(e) {
     dragStartX = e.clientX;
     dragStartY = e.clientY;
   }
-  
+
   if (isDraggingGraph || isTracing) {
     drawGraph();
   }
@@ -2132,7 +2132,7 @@ function onGraphWheel(e) {
   const rect = graphCanvas.getBoundingClientRect();
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
-  
+
   const zoomFactor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
   zoomGraph(zoomFactor, mouseX, mouseY);
 }
@@ -2140,17 +2140,17 @@ function onGraphWheel(e) {
 function zoomGraph(factor, centerX, centerY) {
   const prevScale = graphScale;
   graphScale *= factor;
-  
+
   // Constrain zoom
   if (graphScale < 0.05) graphScale = 0.05;
   if (graphScale > 5000) graphScale = 5000;
-  
+
   const actualFactor = graphScale / prevScale;
-  
+
   // Adjust offset so we zoom towards the center point
   graphOffsetX = centerX - (centerX - graphOffsetX) * actualFactor;
   graphOffsetY = centerY - (centerY - graphOffsetY) * actualFactor;
-  
+
   drawGraph();
 }
 
@@ -2164,37 +2164,37 @@ function recenterGraph() {
 
 function drawGraph() {
   if (!graphCtx || !graphCanvas) return;
-  
+
   const width = graphCanvas.width;
   const height = graphCanvas.height;
-  
+
   // Clear canvas
   graphCtx.clearRect(0, 0, width, height);
-  
+
   // Get computed styles for theming
   const isDarkMode = root.getAttribute('data-theme') === 'dark';
   const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
   const majorGridColor = isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)';
   const axisColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(15, 23, 42, 0.8)';
   const textColor = isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(15, 23, 42, 0.9)';
-  
+
   graphCtx.lineWidth = 1;
-  
+
   // Calculate view bounds in math coordinates
   const minX = -graphOffsetX / graphScale;
   const maxX = (width - graphOffsetX) / graphScale;
   const minY = -(height - graphOffsetY) / graphScale;
   const maxY = graphOffsetY / graphScale;
-  
+
   // Dynamic grid step based on scale
   let step = 1;
   let majorStep = 5;
-  
+
   // Calculate ideal unit spacing (about 50 pixels)
   const idealSpacing = 50 / graphScale;
   const magnitude = Math.pow(10, Math.floor(Math.log10(idealSpacing)));
   const normalized = idealSpacing / magnitude;
-  
+
   if (normalized < 1.5) {
     step = magnitude * 1;
   } else if (normalized < 3.5) {
@@ -2204,7 +2204,7 @@ function drawGraph() {
   } else {
     step = magnitude * 10;
   }
-  
+
   majorStep = step * 5;
 
   // Draw Grid
@@ -2221,11 +2221,11 @@ function drawGraph() {
   }
   graphCtx.strokeStyle = gridColor;
   graphCtx.stroke();
-  
+
   // Draw Coordinate Numbers
   graphCtx.fillStyle = textColor;
   graphCtx.font = "italic 13px 'Inter', sans-serif";
-  
+
   graphCtx.textAlign = 'center';
   graphCtx.textBaseline = 'top';
   for (let x = Math.floor(minX / majorStep) * majorStep; x <= maxX; x += majorStep) {
@@ -2234,7 +2234,7 @@ function drawGraph() {
     // Keep labels slightly below the X axis
     graphCtx.fillText(x.toString(), canvasX, graphOffsetY + 8);
   }
-  
+
   graphCtx.textAlign = 'right';
   graphCtx.textBaseline = 'middle';
   for (let y = Math.floor(minY / majorStep) * majorStep; y <= maxY; y += majorStep) {
@@ -2243,7 +2243,7 @@ function drawGraph() {
     // Keep labels slightly to the left of the Y axis
     graphCtx.fillText(y.toString(), graphOffsetX - 8, canvasY);
   }
-  
+
   // Draw Axes
   graphCtx.beginPath();
   // X Axis
@@ -2252,11 +2252,11 @@ function drawGraph() {
   // Y Axis
   graphCtx.moveTo(graphOffsetX, 0);
   graphCtx.lineTo(graphOffsetX, height);
-  
+
   graphCtx.strokeStyle = axisColor;
   graphCtx.lineWidth = graphLineWidth;
   graphCtx.stroke();
-  
+
   // Draw Axis Arrows
   graphCtx.beginPath();
   // Y Axis arrow (top)
@@ -2269,11 +2269,11 @@ function drawGraph() {
   graphCtx.lineTo(width - 10, graphOffsetY + 4);
   graphCtx.strokeStyle = axisColor;
   graphCtx.stroke();
-  
+
   // Labels
   graphCtx.fillStyle = textColor;
   graphCtx.font = "italic 14px 'Inter', sans-serif";
-  
+
   // Origin '0'
   graphCtx.fillText("0", graphOffsetX - 12, graphOffsetY + 16);
   // 'x' label
@@ -2287,11 +2287,11 @@ function drawGraph() {
       plotExpression(item.text, item.color);
     });
   }
-  
+
   if (isTracing && isMouseInCanvas && activeExpressions.length > 0) {
     const mathX = (currentMouseX - graphOffsetX) / graphScale;
     const mathY = -(currentMouseY - graphOffsetY) / graphScale;
-    
+
     let closestExpr = null;
     let closestYVal = null;
     let closestDist = Infinity;
@@ -2302,7 +2302,7 @@ function drawGraph() {
       if (!cleanExpr.trim()) return;
       const jsExpr = mathToJS(cleanExpr);
       try {
-        const fn = new Function('x', 
+        const fn = new Function('x',
           'var PI=Math.PI,E=Math.E,sin=Math.sin,cos=Math.cos,tan=Math.tan,' +
           'abs=Math.abs,sqrt=Math.sqrt,log=Math.log10,ln=Math.log,' +
           'pow=Math.pow,exp=Math.exp,ceil=Math.ceil,floor=Math.floor,round=Math.round;' +
@@ -2318,7 +2318,7 @@ function drawGraph() {
             closestColor = item.color;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
     });
 
     if (closestYVal !== null) {
@@ -2371,7 +2371,7 @@ function drawGraph() {
   } else if (isTracing && isMouseInCanvas) {
     drawTraceCursor(currentMouseX, currentMouseY);
   }
-  
+
   // Update settings inputs if open
   if (typeof updateGraphSettingsInputs === 'function') {
     updateGraphSettingsInputs();
@@ -2392,7 +2392,7 @@ function drawTraceCursor(x, y) {
 
   graphCtx.fillStyle = 'white';
   graphCtx.fill();
-  
+
   graphCtx.strokeStyle = 'black';
   graphCtx.lineWidth = 1.5;
   graphCtx.stroke();
@@ -2415,7 +2415,7 @@ function initGraphSettings() {
   const settingsBtn = document.getElementById('graphSettingsBtn');
   const settingsPanel = document.getElementById('graphSettingsPanel');
   if (!settingsBtn || !settingsPanel) return;
-  
+
   settingsBtn.addEventListener('click', () => {
     isSettingsPanelOpen = !isSettingsPanelOpen;
     settingsPanel.style.display = isSettingsPanelOpen ? 'flex' : 'none';
@@ -2423,34 +2423,34 @@ function initGraphSettings() {
       updateGraphSettingsInputs();
     }
   });
-  
+
   // Window Inputs
   const inputs = ['xMinInput', 'xMaxInput', 'yMinInput', 'yMaxInput'].map(id => document.getElementById(id));
-  
+
   function applyWindowInputs() {
     if (!graphCanvas) return;
     const xMin = parseFloat(inputs[0].value);
     const xMax = parseFloat(inputs[1].value);
     const yMin = parseFloat(inputs[2].value);
     const yMax = parseFloat(inputs[3].value);
-    
+
     if (isNaN(xMin) || isNaN(xMax) || isNaN(yMin) || isNaN(yMax)) return;
     if (xMin >= xMax || yMin >= yMax) return;
-    
+
     // Isotropic scaling based on X range
     const width = graphCanvas.width;
     const height = graphCanvas.height;
-    
+
     graphScale = width / (xMax - xMin);
     graphOffsetX = -xMin * graphScale;
-    
+
     // Recenter Y based on provided min/max bounds
     const yCenter = (yMin + yMax) / 2;
     graphOffsetY = height / 2 + yCenter * graphScale;
-    
+
     drawGraph();
   }
-  
+
   inputs.forEach(input => {
     if (input) {
       input.addEventListener('change', applyWindowInputs);
@@ -2459,13 +2459,13 @@ function initGraphSettings() {
       });
     }
   });
-  
+
   // Reset view
   document.getElementById('resetViewBtn')?.addEventListener('click', () => {
     recenterGraph();
     updateGraphSettingsInputs();
   });
-  
+
   // Unit Toggles
   const unitGroup = document.getElementById('angleUnitGroup');
   if (unitGroup) {
@@ -2477,39 +2477,39 @@ function initGraphSettings() {
       }
     });
   }
-  
+
   // Line Thickness - Custom Dropdown
   const dropdown = document.getElementById('lineThicknessDropdown');
   if (dropdown) {
     const trigger = dropdown.querySelector('.custom-select-trigger');
     const options = dropdown.querySelectorAll('.custom-select-option');
     const triggerPreview = trigger.querySelector('.line-preview');
-    
+
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
       dropdown.classList.toggle('is-open');
     });
-    
+
     options.forEach(option => {
       option.addEventListener('click', (e) => {
         e.stopPropagation();
         const val = parseInt(option.getAttribute('data-value'));
         graphLineWidth = val;
-        
+
         // Update selected state
         options.forEach(o => o.classList.remove('is-selected'));
         option.classList.add('is-selected');
-        
+
         // Update trigger preview
         triggerPreview.setAttribute('data-thickness', val.toString());
-        
+
         // Close dropdown
         dropdown.classList.remove('is-open');
-        
+
         drawGraph();
       });
     });
-    
+
     // Close on outside click
     document.addEventListener('click', () => {
       dropdown.classList.remove('is-open');
@@ -2521,17 +2521,17 @@ function updateGraphSettingsInputs() {
   if (!isSettingsPanelOpen || !graphCanvas) return;
   const width = graphCanvas.width;
   const height = graphCanvas.height;
-  
+
   const minX = -graphOffsetX / graphScale;
   const maxX = (width - graphOffsetX) / graphScale;
   const minY = -(height - graphOffsetY) / graphScale;
   const maxY = graphOffsetY / graphScale;
-  
+
   const xMinEl = document.getElementById('xMinInput');
   const xMaxEl = document.getElementById('xMaxInput');
   const yMinEl = document.getElementById('yMinInput');
   const yMaxEl = document.getElementById('yMaxInput');
-  
+
   // Only update if not currently focused to avoid messing with user typing
   if (xMinEl && document.activeElement !== xMinEl) xMinEl.value = minX.toFixed(4);
   if (xMaxEl && document.activeElement !== xMaxEl) xMaxEl.value = maxX.toFixed(4);
@@ -2571,7 +2571,7 @@ function mathToJS(expr) {
     .replace(/³/g, '**3')
     .replace(/⁻¹/g, '**(-1)')
     .replace(/\(-\)/g, '-');
-    
+
   jsExpr = jsExpr.replace(/\^/g, '**');
 
   jsExpr = jsExpr.replace(/(\d+)([a-zA-Z\(])/g, '$1*$2');
@@ -2586,7 +2586,7 @@ function plotExpression(expr, color) {
 
   let inequality = null;
   let inequalitySide = ''; // 'below' or 'above'
-  
+
   if (cleanExpr.includes('<=')) {
     inequality = '<=';
     inequalitySide = 'below';
@@ -2614,10 +2614,10 @@ function plotExpression(expr, color) {
   }
 
   const jsExpr = mathToJS(formula);
-  
+
   let fn;
   try {
-    fn = new Function('x', 
+    fn = new Function('x',
       'var PI=Math.PI,E=Math.E,sin=Math.sin,cos=Math.cos,tan=Math.tan,' +
       'asin=Math.asin,acos=Math.acos,atan=Math.atan,' +
       'sinh=Math.sinh,cosh=Math.cosh,tanh=Math.tanh,' +
@@ -2647,12 +2647,12 @@ function plotExpression(expr, color) {
       points.push({ x: canvasX, y: null });
       continue;
     }
-    
+
     if (isNaN(mathY) || !isFinite(mathY)) {
       points.push({ x: canvasX, y: null });
       continue;
     }
-    
+
     const canvasY = graphOffsetY - mathY * graphScale;
     points.push({ x: canvasX, y: canvasY });
   }
@@ -2764,7 +2764,7 @@ function initFxKeypad() {
   const trigBtn = document.getElementById('fxTrigBtn');
   const ineqBtn = document.getElementById('fxIneqBtn');
   const funcBtn = document.getElementById('fxFuncBtn');
-  
+
   const catDropdown = document.getElementById('fxCatDropdown');
   const gridTrig = document.getElementById('fxGridTrig');
   const gridIneq = document.getElementById('fxGridIneq');
@@ -2775,7 +2775,7 @@ function initFxKeypad() {
 
   function toggleCatDropdown(activeBtn, targetGrid) {
     const isCurrentlyActive = activeBtn.classList.contains('is-active');
-    
+
     // Deactivate all buttons and hide all grids
     [trigBtn, ineqBtn, funcBtn].forEach(btn => btn?.classList.remove('is-active'));
     [gridTrig, gridIneq, gridFunc].forEach(grid => {
@@ -2913,7 +2913,7 @@ function initFxKeypad() {
   function renderFxExpressions() {
     if (!list) return;
     list.innerHTML = '';
-    
+
     activeExpressions.forEach((item, index) => {
       const expr = item.text;
       const color = item.color;
@@ -2938,9 +2938,9 @@ function initFxKeypad() {
           <span class="popover-label">Color</span>
           <div class="popover-colors-grid">
             ${[
-              '#3b82f6', '#06b6d4', '#a855f7', '#22c55e', '#10b981',
-              '#ef4444', '#ec4899', '#f43f5e', '#f59e0b', '#f97316'
-            ].map(c => `
+          '#3b82f6', '#06b6d4', '#a855f7', '#22c55e', '#10b981',
+          '#ef4444', '#ec4899', '#f43f5e', '#f59e0b', '#f97316'
+        ].map(c => `
               <button type="button" class="color-swatch-btn ${c.toLowerCase() === color.toLowerCase() ? 'is-selected' : ''}" 
                 data-color="${c}" style="background-color: ${c};"></button>
             `).join('')}
@@ -2951,10 +2951,10 @@ function initFxKeypad() {
       // Color Options Button Toggle
       const colorBtn = row.querySelector('.fx-expr-color-btn');
       const popover = row.querySelector('.fx-line-options-popover');
-      
+
       colorBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        
+
         // Close all other open popovers first
         document.querySelectorAll('.fx-line-options-popover').forEach(pop => {
           if (pop !== popover) pop.style.display = 'none';
@@ -2970,7 +2970,7 @@ function initFxKeypad() {
         swatch.addEventListener('click', (e) => {
           e.stopPropagation();
           const selectedColor = swatch.getAttribute('data-color');
-          
+
           // Update model state
           item.color = selectedColor;
 
@@ -3026,8 +3026,8 @@ function initFxKeypad() {
     theme: 'dark',
     shape: 'mixed',
     density: 'normal',
-    numpadFont: 'Inter',
-    displayFont: 'Inter',
+    numpadFont: 'NType',
+    displayFont: 'NType',
     swapDecimalZero: false,
     bottomToolbar: false,
     hideCalcText: false,
@@ -3065,9 +3065,9 @@ function initFxKeypad() {
     card.classList.add('density-' + s.density);
 
     // Fonts
-    ['Inter', 'NDot', 'NType', 'SpaceMono', 'Playfair'].forEach(f => card.classList.remove('font-numpad-' + f));
+    ['NothingDotted', 'Nothing', 'NothingPremium', 'Inter', 'NDot', 'NType', 'SpaceMono', 'LetteraMono', 'Playfair'].forEach(f => card.classList.remove('font-numpad-' + f));
     card.classList.add('font-numpad-' + s.numpadFont);
-    ['Inter', 'NDot', 'NType', 'LetteraMono', 'Playfair'].forEach(f => card.classList.remove('font-display-' + f));
+    ['NothingDotted', 'Nothing', 'NothingPremium', 'Inter', 'NDot', 'NType', 'SpaceMono', 'LetteraMono', 'Playfair'].forEach(f => card.classList.remove('font-display-' + f));
     card.classList.add('font-display-' + s.displayFont);
 
     // Hide "Calculator" text
@@ -3081,9 +3081,15 @@ function initFxKeypad() {
       if (k.dataset.insert === '.') dotBtn = k;
       if (k.dataset.insert === '0') zeroBtn = k;
     });
-    if (dotBtn && zeroBtn && s.swapDecimalZero) {
-      if (dotBtn.compareDocumentPosition(zeroBtn) & Node.DOCUMENT_POSITION_FOLLOWING) {
-        dotBtn.parentNode.insertBefore(zeroBtn, dotBtn);
+    if (dotBtn && zeroBtn) {
+      if (s.swapDecimalZero) {
+        if (dotBtn.compareDocumentPosition(zeroBtn) & Node.DOCUMENT_POSITION_FOLLOWING) {
+          dotBtn.parentNode.insertBefore(zeroBtn, dotBtn);
+        }
+      } else {
+        if (zeroBtn.compareDocumentPosition(dotBtn) & Node.DOCUMENT_POSITION_FOLLOWING) {
+          zeroBtn.parentNode.insertBefore(dotBtn, zeroBtn);
+        }
       }
     }
 
@@ -3153,19 +3159,37 @@ function initFxKeypad() {
     list.innerHTML = phoneHistory.slice().reverse().map((item, i) => {
       const idx = phoneHistory.length - 1 - i;
       return `<div class="phone-history-item" data-idx="${idx}">
+        <button class="phone-history-delete-btn" data-idx="${idx}" title="Delete entry" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
         <div class="phone-history-expr">${item.expr}</div>
         <div class="phone-history-res">${item.result}</div>
       </div>`;
     }).join('');
 
     list.querySelectorAll('.phone-history-item').forEach(el => {
-      el.addEventListener('click', () => {
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('.phone-history-delete-btn')) return;
         const idx = parseInt(el.dataset.idx);
         if (phoneHistory[idx]) {
           expression = phoneHistory[idx].result;
           updateDisplay();
           document.getElementById('phoneHistoryOverlay')?.classList.remove('is-open');
         }
+      });
+    });
+
+    list.querySelectorAll('.phone-history-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        phoneHaptic();
+        const idx = parseInt(btn.dataset.idx);
+        phoneHistory.splice(idx, 1);
+        localStorage.setItem('phoneHistory', JSON.stringify(phoneHistory));
+        phoneRenderHistory();
       });
     });
   }
@@ -3242,12 +3266,31 @@ function initFxKeypad() {
     if (content && title) {
       title.textContent = 'Privacy Policy';
       content.innerHTML = `
-        <p><strong>Effective Date:</strong> 22 March 2026</p>
-        <p><strong>1. Data Collection</strong><br>No personal information or user data is collected. No data leaves the device.</p>
-        <p><strong>2. Local Storage</strong><br>Calculation history and settings are stored locally in browser storage only. No internet access is required for calculator operations.</p>
-        <p><strong>3. Data Deletion</strong><br>All stored data can be removed by clearing browser data or resetting settings within the app.</p>
-        <p><strong>4. Third-Party Services</strong><br>No third-party analytics, advertising, or data-sharing services are integrated.</p>
-        <p><strong>5. Contact</strong><br>For inquiries: montybytes@gmail.com</p>
+        <p style="margin-bottom: 0.6rem; font-style: italic; color: #666; font-size: 0.78rem;">Effective Date: 11 July 2026</p>
+        <div class="phone-license-section">
+          <span class="phone-license-header">1. Data Collection</span>
+          <p style="margin: 0;">No personal information or user data is collected. No data leaves the device.</p>
+        </div>
+        <hr class="phone-license-divider">
+        <div class="phone-license-section">
+          <span class="phone-license-header">2. Local Storage</span>
+          <p style="margin: 0;">Calculation history and settings are stored locally in browser storage only. No internet access is required for calculator operations.</p>
+        </div>
+        <hr class="phone-license-divider">
+        <div class="phone-license-section">
+          <span class="phone-license-header">3. Data Deletion</span>
+          <p style="margin: 0;">All stored data can be removed by clearing browser data or resetting settings within the app.</p>
+        </div>
+        <hr class="phone-license-divider">
+        <div class="phone-license-section">
+          <span class="phone-license-header">4. Third-Party Services</span>
+          <p style="margin: 0;">No third-party analytics, advertising, or data-sharing services are integrated.</p>
+        </div>
+        <hr class="phone-license-divider">
+        <div class="phone-license-section">
+          <span class="phone-license-header">5. Contact</span>
+          <p style="margin: 0;">For inquiries: <a href="mailto:noorsayyed.atwork@gmail.com" style="color: #e30000; text-decoration: none; font-weight: 600;">noorsayyed.atwork@gmail.com</a></p>
+        </div>
       `;
     }
     phoneOpenOverlay('phoneAboutOverlay');
@@ -3259,11 +3302,27 @@ function initFxKeypad() {
     if (content && title) {
       title.textContent = 'Open Source Licenses';
       content.innerHTML = `
-        <p><strong>NxCalculator</strong><br>MIT License — Copyright (c) montybytes</p>
-        <p><strong>NxDesign</strong><br>MIT License — Copyright (c) montybytes</p>
-        <p><strong>Nothing OS Fonts</strong><br>Licensed under their respective terms by Nothing Technology Limited.</p>
-        <p><strong>math.js</strong><br>Apache License 2.0 — Copyright (c) Jos de Jong</p>
-        <p style="margin-top: 1.5rem; font-style: italic; color: #666;">This calculator UI is inspired by the NxCalculator app for Nothing OS.</p>
+        <div class="phone-license-section">
+          <span class="phone-license-header">NxCalculator</span>
+          <p style="margin: 0;">MIT License — Copyright (c) <a href="https://github.com/Noorthistime" target="_blank" style="color: #e30000; text-decoration: none; font-weight: 600;">Noorthistime</a></p>
+        </div>
+        <hr class="phone-license-divider">
+        <div class="phone-license-section">
+          <span class="phone-license-header">NxDesign</span>
+          <p style="margin: 0;">MIT License — Copyright (c) <a href="https://github.com/Noorthistime" target="_blank" style="color: #e30000; text-decoration: none; font-weight: 600;">Noorthistime</a></p>
+        </div>
+        <hr class="phone-license-divider">
+        <div class="phone-license-section">
+          <span class="phone-license-header">Nothing OS Fonts</span>
+          <p style="margin: 0;">Licensed under their respective terms by Nothing Technology Limited.</p>
+        </div>
+        <hr class="phone-license-divider">
+        <div class="phone-license-section">
+          <span class="phone-license-header">mathjs</span>
+          <p style="margin: 0;">Apache License 2.0 — Copyright (c) Jos de Jong</p>
+        </div>
+        <hr class="phone-license-divider">
+        <p style="margin-top: 1.5rem; font-style: italic; color: #666; line-height: 1.4;">This calculator UI is inspired by the NxCalculator app for Nothing OS.</p>
       `;
     }
     phoneOpenOverlay('phoneAboutOverlay');
@@ -3406,10 +3465,10 @@ function initFxKeypad() {
   }
 
   // ---- Override evaluateExpression for phone history ----
-  const originalEvaluateExpression = window.evaluateExpression || evaluateExpression;
-  const phoneEvaluateExpression = async function() {
+  const originalEvaluateExpression = evaluateExpression;
+  evaluateExpression = async function () {
     if (currentMode !== 'phone') {
-      return originalEvaluateExpression();
+      return await originalEvaluateExpression();
     }
 
     if (!expression.trim()) {
@@ -3447,13 +3506,9 @@ function initFxKeypad() {
     }
   };
 
-  // Patch the equals action to use phone-specific evaluate
+  // Patch the handleCalculatorAction to add haptics for phone mode
   const origHandleCalcAction = handleCalculatorAction;
-  handleCalculatorAction = async function(action, button) {
-    if (currentMode === 'phone' && action === 'equals') {
-      await phoneEvaluateExpression();
-      return;
-    }
+  handleCalculatorAction = async function (action, button) {
     // Phone-specific haptic on any keypress
     if (currentMode === 'phone') {
       phoneHaptic();
@@ -3463,9 +3518,57 @@ function initFxKeypad() {
 
   // Also add haptic to insert for phone mode
   const origInsertValue = insertValue;
-  insertValue = function(value) {
+  insertValue = function (value) {
     if (currentMode === 'phone') phoneHaptic();
     return origInsertValue(value);
   };
+
+  // Handle haptic animation and feedback on physical keyboard keydown
+  window.addEventListener('keydown', (event) => {
+    if (currentMode !== 'phone') return;
+    const s = phoneGetSettings();
+    if (s.disableHaptics) return;
+
+    const { key } = event;
+    let button = null;
+
+    if (/[0-9]/.test(key)) {
+      button = document.querySelector(`.phone-mode .key[data-insert="${key}"]`);
+    } else if (key === '+') {
+      button = document.querySelector('.phone-mode .key[data-insert="+"]');
+    } else if (key === '-') {
+      button = document.querySelector('.phone-mode .key[data-insert="-"]');
+    } else if (key === '*') {
+      button = document.querySelector('.phone-mode .key[data-insert="*"]');
+    } else if (key === '/') {
+      button = document.querySelector('.phone-mode .key[data-insert="/"]');
+    } else if (key === '.') {
+      button = document.querySelector('.phone-mode .key[data-insert="."]');
+    } else if (key === '(' || key === ')') {
+      button = document.querySelector('.phone-mode .key[data-insert="("]');
+    } else if (key === '^') {
+      button = document.querySelector('.phone-mode .key-sci[data-insert="^"]');
+    } else if (key === '%') {
+      button = document.querySelector('.phone-mode .key[data-insert="%"]');
+    } else if (key === 'Enter' || key === '=') {
+      button = document.querySelector('.phone-mode .key[data-action="equals"]');
+    } else if (key === 'Backspace') {
+      button = document.querySelector('.phone-mode .key[data-action="backspace"]');
+    } else if (key === 'Escape') {
+      button = document.querySelector('.phone-mode .key[data-action="clear"]');
+    }
+
+    if (button) {
+      // Avoid double haptic trigger if standard keydown handler will trigger it via insertValue/evaluateExpression
+      const isAlreadyHaptic = /[0-9]/.test(key) || ['+', '-', '*', '/', '.', '(', ')', '^', 'Enter', '='].includes(key);
+      if (!isAlreadyHaptic) {
+        phoneHaptic();
+      }
+      button.classList.add('active-click');
+      setTimeout(() => {
+        button.classList.remove('active-click');
+      }, 100);
+    }
+  });
 
 })();

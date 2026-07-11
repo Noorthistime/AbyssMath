@@ -77,29 +77,32 @@
       </aside>
 
       <section class="calculator-card" aria-label="Scientific calculator">
-          <!-- Phone Mode Header -->
-          <div class="phone-header" style="display: none;">
-            <span class="phone-title" id="phoneTitle">Calculator</span>
-            <div class="phone-icons">
-              <button class="phone-icon-btn" id="phoneFunctionsBtn" aria-label="Functions" type="button">
-                <span class="fx-icon-text"><i>f<sub>x</sub></i></span>
-              </button>
-              <button class="phone-icon-btn" id="phoneMenuBtn" aria-label="Settings" type="button">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
-              </button>
-              <!-- history btn kept for overlay functionality but hidden visually -->
-              <button class="phone-icon-btn" id="phoneHistoryBtn" aria-label="History" type="button" style="display:none;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 8v4l3 3"></path>
-                  <path d="M3.51 9a9 9 0 1 1 0 6"></path>
-                  <polyline points="2 9 6 9 6 5"></polyline>
-                </svg>
-              </button>
-            </div>
+        <!-- Phone Mode Header -->
+        <div class="phone-header" style="display: none;">
+          <span class="phone-title" id="phoneTitle">Calculator</span>
+          <div class="phone-icons">
+            <button class="phone-icon-btn" id="phoneFunctionsBtn" aria-label="Functions" type="button">
+              <span class="fx-icon-text"><i>f<sub>x</sub></i></span>
+            </button>
+            <button class="phone-icon-btn" id="phoneHistoryBtn" aria-label="History" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 8v4l3 3"></path>
+                <path d="M3.51 9a9 9 0 1 1 0 6"></path>
+                <polyline points="2 9 6 9 6 5"></polyline>
+              </svg>
+            </button>
+            <button class="phone-icon-btn" id="phoneMenuBtn" aria-label="Settings" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+                </path>
+              </svg>
+            </button>
           </div>
+        </div>
         <div class="display">
           <div class="expression" id="expression">0</div>
           <div class="result" id="result"></div>
@@ -147,20 +150,33 @@
           <button data-insert="." class="key">.</button>
           <button data-insert="0" class="key">0</button>
           <button data-action="backspace" class="key">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89H22c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3.71 12.29a1 1 0 0 1-1.42 1.42L14 13.41l-2.88 2.88a1 1 0 1 1-1.41-1.41L12.59 12 9.71 9.12a1 1 0 1 1 1.41-1.41L14 10.59l2.88-2.88a1 1 0 0 1 1.42 1.42L15.41 12l2.88 2.88z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89H22c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3.71 12.29a1 1 0 0 1-1.42 1.42L14 13.41l-2.88 2.88a1 1 0 1 1-1.41-1.41L12.59 12 9.71 9.12a1 1 0 1 1 1.41-1.41L14 10.59l2.88-2.88a1 1 0 0 1 1.42 1.42L15.41 12l2.88 2.88z" />
+            </svg>
           </button>
           <button data-action="equals" class="key key-equals">=</button>
         </div>
 
         <!-- Phone History Overlay -->
-        <div class="phone-history-overlay" id="phoneHistoryOverlay" style="display: none;">
+        <div class="phone-history-overlay" id="phoneHistoryOverlay">
           <div class="phone-overlay-header">
             <button class="phone-overlay-back" id="phoneHistoryBackBtn" type="button">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
             </button>
             <span class="phone-overlay-title">History</span>
             <button class="phone-overlay-action" id="phoneHistoryClearBtn" title="Clear All" type="button">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
             </button>
           </div>
           <div class="phone-history-list" id="phoneHistoryList">
@@ -169,20 +185,27 @@
         </div>
 
         <!-- Phone Settings Overlay -->
-        <div class="phone-settings-overlay" id="phoneSettingsOverlay" style="display: none;">
+        <div class="phone-settings-overlay" id="phoneSettingsOverlay">
           <div class="phone-overlay-header">
             <button class="phone-overlay-back" id="phoneSettingsBackBtn" type="button">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
             </button>
             <span class="phone-overlay-title">Settings</span>
             <button class="phone-overlay-action" id="phoneSettingsResetBtn" title="Reset All" type="button">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+              </svg>
             </button>
           </div>
           <div class="phone-settings-list">
             <div class="phone-settings-group">
               <div class="phone-settings-group-title">Appearance</div>
-              
+
               <div class="phone-settings-item">
                 <div class="phone-settings-item-label">
                   <span class="phone-settings-item-name">App Theme Mode</span>
@@ -225,16 +248,7 @@
                 </label>
               </div>
 
-              <div class="phone-settings-item">
-                <div class="phone-settings-item-label">
-                  <span class="phone-settings-item-name">Toolbar Above Numpad</span>
-                  <span class="phone-settings-item-desc">Move history and mode buttons directly above the numpad</span>
-                </div>
-                <label class="phone-settings-switch">
-                  <input type="checkbox" id="settingPhoneBottomToolbar">
-                  <span class="phone-settings-slider"></span>
-                </label>
-              </div>
+
 
               <div class="phone-settings-item">
                 <div class="phone-settings-item-label">
@@ -259,17 +273,19 @@
 
             <div class="phone-settings-group">
               <div class="phone-settings-group-title">Fonts</div>
-              
+
               <div class="phone-settings-item">
                 <div class="phone-settings-item-label">
                   <span class="phone-settings-item-name">Numpad Font</span>
                 </div>
                 <select id="settingPhoneNumpadFont" class="phone-settings-select">
+                  <option value="NothingDotted">Nothing Dotted</option>
+                  <option value="NothingPremium">Nothing Premium</option>
                   <option value="Playfair">Playfair Display (Serif)</option>
                   <option value="NType">NType (Nothing Sans)</option>
-                  <option value="NDot">NDot (Nothing Dotted)</option>
                   <option value="Inter">Inter</option>
                   <option value="SpaceMono">Space Mono</option>
+                  <option value="LetteraMono">Lettera Mono</option>
                 </select>
               </div>
 
@@ -278,11 +294,13 @@
                   <span class="phone-settings-item-name">Equation & Result Font</span>
                 </div>
                 <select id="settingPhoneDisplayFont" class="phone-settings-select">
+                  <option value="NothingDotted">Nothing Dotted</option>
+                  <option value="NothingPremium">Nothing Premium</option>
                   <option value="Playfair">Playfair Display (Serif)</option>
-                  <option value="Inter">Inter</option>
-                  <option value="LetteraMono">Lettera Mono</option>
-                  <option value="NDot">NDot (Nothing Dotted)</option>
                   <option value="NType">NType (Nothing Sans)</option>
+                  <option value="Inter">Inter</option>
+                  <option value="SpaceMono">Space Mono</option>
+                  <option value="LetteraMono">Lettera Mono</option>
                 </select>
               </div>
             </div>
@@ -328,13 +346,17 @@
                 <div class="phone-settings-item-label">
                   <span class="phone-settings-item-name">Privacy Policy</span>
                 </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
               </div>
               <div class="phone-settings-item phone-clickable-item" id="phoneBtnLicenses">
                 <div class="phone-settings-item-label">
                   <span class="phone-settings-item-name">Open Source Licenses</span>
                 </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
               </div>
             </div>
 
@@ -343,15 +365,20 @@
         </div>
 
         <!-- Phone About Content Overlay -->
-        <div class="phone-history-overlay" id="phoneAboutOverlay" style="display: none; z-index: 1100 !important;">
+        <div class="phone-history-overlay" id="phoneAboutOverlay" style="z-index: 1100 !important;">
           <div class="phone-overlay-header">
             <button class="phone-overlay-back" id="phoneAboutBackBtn" type="button">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
             </button>
             <span class="phone-overlay-title" id="phoneAboutTitle">About</span>
             <div style="width: 36px;"></div> <!-- placeholder to balance space -->
           </div>
-          <div class="phone-settings-list" id="phoneAboutContent" style="color: #888888; font-size: 0.95rem; line-height: 1.5; padding: 0.5rem; overflow-y: auto;">
+          <div class="phone-settings-list" id="phoneAboutContent"
+            style="color: #888888; font-size: 0.82rem; line-height: 1.35; padding: 0.2rem 0.5rem; overflow: hidden !important;">
             <!-- about content goes here -->
           </div>
         </div>
