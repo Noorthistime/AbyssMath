@@ -157,6 +157,7 @@ body::before {
 .shell {
   width: min(1120px, calc(100% - 2rem));
   height: 100vh;
+  height: 100dvh;
   margin: 0 auto;
   padding: 1rem 0;
   position: relative;
@@ -951,79 +952,379 @@ h1 {
   }
 }
 
+/* ============================================================
+   Mobile Responsive Styles (≤ 620px)
+   Rules: Touch desktop UI & functionality = NEVER
+         Only structure, layout, spacing adapted for phone
+   ============================================================ */
 @media (max-width: 620px) {
-  .shell {
-    padding: 0.6rem 0;
+
+  /* --- Base layout --- */
+  html, body {
+    overflow: hidden;
   }
 
+  .shell {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    padding: 0.5rem 0;
+    gap: 0.5rem;
+  }
+
+  /* --- Header --- */
   header {
-    top: 6px;
+    top: 4px;
+    padding: 12px 14px;
+    border-radius: 18px;
+    margin: 0 0.6rem;
   }
 
   .logo {
-    gap: 0.55rem;
+    gap: 0.5rem;
   }
 
   .logo-icon {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
   }
 
-  .hero {
-    margin-top: 1.2rem;
-    padding: 0.7rem 0.2rem;
+  .logo-text {
+    font-size: 0.95rem;
   }
 
-  h1 {
-    font-size: clamp(1.7rem, 9vw, 2.6rem);
+  .btn-circle {
+    width: 38px;
+    height: 38px;
   }
 
+  /* Accent dropdown: keep visible on small screens */
+  .accent-dropdown {
+    right: 0;
+    left: auto;
+    width: 220px;
+  }
+
+  /* --- Workspace: single-column, calculator takes all remaining space --- */
   .workspace {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+    flex: 1;
+    margin: 0 0.6rem;
+    overflow: hidden;
   }
 
+  /* --- Mode Panel: horizontal scrollable pill strip --- */
   .mode-panel {
-    border-radius: 24px;
-    padding: 0.75rem;
+    border-radius: 18px;
+    padding: 0.55rem 0.7rem;
+    height: auto;
+    min-height: 0;
+    flex-shrink: 0;
+    overflow: hidden;
   }
 
   .mode-panel h2 {
-    margin-bottom: 0.55rem;
-    font-size: 0.95rem;
-    padding-bottom: 0.4rem;
+    display: none; /* hide title to save space on mobile */
+  }
+
+  .mode-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 0.45rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    grid-template-rows: none;
+    grid-template-columns: none;
+    flex: none;
+    min-height: 0;
+    padding-bottom: 2px; /* prevent scroll bar flicker */
+  }
+
+  .mode-list::-webkit-scrollbar {
+    display: none;
   }
 
   .mode-button {
-    min-height: 2.35rem;
-    border-radius: 14px;
-    font-size: 0.72rem;
-    padding: 0 0.3rem;
+    flex-shrink: 0;
+    height: 2.2rem;
+    min-height: 0;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    padding: 0 0.9rem;
+    white-space: nowrap;
   }
 
+  /* --- Calculator card: takes all remaining flex space --- */
   .calculator-card {
-    border-radius: 24px;
-    padding: 0.75rem;
+    border-radius: 22px;
+    padding: 0.7rem;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .display {
-    min-height: 5rem;
-    padding: 0.85rem;
+    min-height: clamp(4.5rem, 18vw, 6rem);
+    padding: 0.75rem;
+    border-radius: 18px;
+    margin-bottom: 0.6rem;
+    gap: 0.5rem;
+  }
+
+  .expression {
+    font-size: clamp(1.6rem, 8vw, 2.6rem);
+  }
+
+  .keypad {
+    gap: clamp(0.3rem, 1.5vw, 0.55rem);
   }
 
   .key {
-    min-height: 2rem;
-    border-radius: 16px;
-    font-size: 0.92rem;
+    min-height: clamp(2rem, 8vw, 3rem);
+    border-radius: 14px;
+    font-size: 0.9rem;
   }
 
   .hint-row {
     flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+  }
+
+  /* --- Scientific mode on mobile --- */
+  .calculator-card.scientific-mode .display {
+    min-height: clamp(3.5rem, 12vw, 5rem);
+    margin-bottom: 0.4rem;
+  }
+
+  .calculator-card.scientific-mode .keypad {
+    gap: 0.22rem;
+  }
+
+  .calculator-card.scientific-mode .key {
+    min-height: clamp(1.6rem, 6vw, 2.4rem);
+    border-radius: 8px;
+    font-size: 0.75rem;
+  }
+
+  /* --- Programming mode on mobile --- */
+  .calculator-card.programming-mode {
+    padding: 0.45rem;
+  }
+
+  .calculator-card.programming-mode .display {
+    min-height: clamp(2.8rem, 10vw, 4rem);
+    margin-bottom: 0.3rem;
+    padding: 0.55rem;
+  }
+
+  .calculator-card.programming-mode .expression {
+    font-size: clamp(1.1rem, 5vw, 1.8rem);
+  }
+
+  .calculator-card.programming-mode .key {
+    min-height: clamp(1.4rem, 5.5vw, 2rem);
+    border-radius: 8px;
+    font-size: 0.72rem;
+  }
+
+  .programmer-readout {
+    padding: 0.15rem 0.4rem;
+  }
+
+  .programmer-base-btn {
+    font-size: 0.72rem;
+    gap: 0.6rem;
+    padding: 0.04rem 0.2rem;
+  }
+
+  .programmer-base-btn strong {
+    font-size: 0.72rem;
+  }
+
+  .programmer-toolbar-row {
+    padding: 0.3rem 0.4rem;
+  }
+
+  .programmer-toolbar-tabs {
+    gap: 0.5rem;
+  }
+
+  .programmer-dropdowns-row {
+    padding: 0.3rem 0.4rem;
     gap: 0.35rem;
   }
 
-  .accent-dropdown {
-    right: -56px;
+  .programmer-dropdown-btn {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  /* Bit grid: scroll horizontally if needed */
+  .programmer-bits-grid {
+    overflow-x: auto;
+    padding: 0.2rem 0.3rem;
+    gap: 0.5rem;
+  }
+
+  .programmer-bit-btn {
+    width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
+  }
+
+  .programmer-bit-group-label {
+    font-size: 0.6rem;
+  }
+
+  .programmer-bitwise-panel {
+    min-height: 120px;
+    padding: 0.3rem 0.4rem;
+  }
+
+  .programmer-bitwise-btn {
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+
+  /* --- Date mode on mobile --- */
+  .calculator-card.date-mode {
+    padding: 0.75rem;
+    overflow-y: auto;
+  }
+
+  .calculator-card.date-mode #keypad {
+    gap: 0.7rem;
+  }
+
+  /* Stack date calendar row vertically on mobile */
+  .date-calendar-row {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+
+  .date-result-panel {
+    font-size: 0.9rem;
+    padding: 0.55rem 0.7rem;
+  }
+
+  .dp-day-btn,
+  .dp-empty {
+    height: 30px;
+    font-size: 0.82rem;
+  }
+
+  .dp-month-select-btn,
+  .dp-year-select-btn {
+    height: 36px;
+    font-size: 0.82rem;
+  }
+
+  /* --- Standard History Sidebar: stacks below calculator --- */
+  .workspace.has-history {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+    gap: 0.5rem !important;
+  }
+
+  .standard-history-sidebar {
+    height: 160px !important;
+    border-radius: 20px !important;
+    flex-shrink: 0;
+  }
+
+  /* --- Phone mode stays centered, no changes needed --- */
+  .calculator-card.phone-mode {
+    width: 100% !important;
+    max-width: 340px !important;
+    align-self: center;
+    flex: none;
+  }
+
+  /* --- Graphing card on mobile --- */
+  .graphing-card {
+    border-radius: 22px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .graphing-header {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .graphing-title {
+    font-size: 1.1rem;
+  }
+
+  .graphing-toggle-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .graphing-floating-tr,
+  .graphing-floating-br {
+    padding: 0.3rem;
+    border-radius: 12px;
+  }
+
+  .graphing-floating-tr .btn-circle,
+  .graphing-floating-br .btn-circle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .graph-settings-panel {
+    width: calc(100% - 1.5rem);
+    right: 0.75rem;
+    top: 3.5rem;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .fx-panel {
+    padding: 0.9rem;
+  }
+
+  .fx-keypad {
+    gap: 4px;
+  }
+
+  .fx-key {
+    height: 38px;
+    font-size: 0.88rem;
+  }
+
+  /* --- Scientific status / memory rows --- */
+  .scientific-status-row {
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .scientific-memory-row {
+    gap: 0.2rem;
+  }
+
+  .scientific-memory {
+    min-width: 2rem;
+    font-size: 0.68rem;
+  }
+
+  .scientific-mini {
+    font-size: 0.68rem;
+    padding: 0 0.3rem;
+  }
+
+  .scientific-tab {
+    font-size: 0.72rem;
+    padding: 0 0.45rem;
   }
 }
 
@@ -3951,13 +4252,17 @@ input:checked+.phone-settings-slider:before {
 }
 
 @media (max-width: 620px) {
+  /* workspace is now flex on mobile — override grid template */
   .workspace.has-history {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto minmax(0, 1fr) 200px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: unset !important;
+    grid-template-rows: unset !important;
     gap: 0.5rem !important;
   }
   .standard-history-sidebar {
-    height: 200px !important;
-    border-radius: 24px !important;
+    height: 150px !important;
+    border-radius: 18px !important;
+    flex-shrink: 0 !important;
   }
 }
