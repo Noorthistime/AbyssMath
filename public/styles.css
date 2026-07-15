@@ -1326,6 +1326,97 @@ h1 {
     font-size: 0.72rem;
     padding: 0 0.45rem;
   }
+
+  /* -------------------------------------------------------
+     Fix 1: Nothing (Phone) mode — last row clipped
+     Workspace must scroll when the phone card's natural
+     height exceeds the available flex space.
+  ------------------------------------------------------- */
+  .workspace:has(.phone-mode) {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* -------------------------------------------------------
+     Fix 2 & 3: Scientific / Programming with History open —
+     last row of keys hidden behind the history sidebar.
+     Allow the calculator card to scroll internally instead
+     of clipping its overflow.
+  ------------------------------------------------------- */
+  .workspace.has-history .calculator-card {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Slim down the history sidebar height on mobile so the
+     calculator keeps as much space as possible.          */
+  .workspace.has-history .standard-history-sidebar {
+    height: 130px !important;
+  }
+
+  /* -------------------------------------------------------
+     Fix 4: Date Calculation — Add/Subtract calendars cut off
+     The #keypad inside date-mode has height:100% which
+     collapses in a scrollable context. Reset it to auto
+     so the card can scroll through both calendar pickers.
+  ------------------------------------------------------- */
+  .calculator-card.date-mode {
+    overflow-y: auto;
+  }
+
+  .calculator-card.date-mode #keypad {
+    height: auto !important;   /* override desktop height:100% */
+    overflow: visible;
+  }
+
+  .date-calc-container {
+    height: auto !important;   /* same — let content expand naturally */
+  }
+
+  /* Stack the two calendars properly and give them room */
+  .date-calendar-row {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+
+  .date-picker-dialog {
+    margin-top: 0.4rem;
+  }
+
+  /* -------------------------------------------------------
+     Fix 5a: Graphing — pinch-to-zoom on canvas
+     Without touch-action:none the browser intercepts pinch
+     gestures for viewport zoom; setting none passes them
+     to the JS touch handlers that implement canvas zoom.
+  ------------------------------------------------------- */
+  #graphCanvas {
+    touch-action: none;
+  }
+
+  /* -------------------------------------------------------
+     Fix 5b: Graphing fx panel — expression input & keypad
+     The panel must scroll vertically on small phones so
+     the full keypad (7 rows ≈ 300px) is reachable, and
+     the expression input is always reachable at the top.
+  ------------------------------------------------------- */
+  .fx-panel {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Slightly reduce fx-key height on small screens so the
+     keypad fits without scrolling on most phones.        */
+  .fx-key {
+    height: 34px;
+    font-size: 0.82rem;
+  }
+
+  /* Ensure expression input is easily tappable — 16px font
+     prevents iOS from auto-zooming the viewport on focus. */
+  .fx-expression-input {
+    font-size: 1rem;
+    touch-action: manipulation;
+  }
 }
 
 /* Programmer Mode Styles */
