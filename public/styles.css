@@ -1006,6 +1006,19 @@ h1 {
     width: 220px;
   }
 
+  .custom-color-picker-wrapper {
+    justify-content: flex-start;
+  }
+
+  .custom-color-picker-wrapper label {
+    flex: 0 0 auto;
+    margin-right: auto;
+  }
+
+  #customColorPicker {
+    margin-right: 8px; /* Offset from screen edge on mobile to prevent native color picker cutoffs */
+  }
+
   /* --- Workspace: single-column, calculator takes all remaining space --- */
   .workspace {
     display: flex;
