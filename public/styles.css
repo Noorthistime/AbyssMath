@@ -1007,16 +1007,31 @@ h1 {
   }
 
   .custom-color-picker-wrapper {
+    display: flex;
     justify-content: flex-start;
+    align-items: center;
+    gap: 0.7rem;
   }
 
-  .custom-color-picker-wrapper label {
-    flex: 0 0 auto;
-    margin-right: auto;
+  .custom-swatch-preview {
+    order: 1;
   }
 
   #customColorPicker {
-    margin-right: 8px; /* Offset from screen edge on mobile to prevent native color picker cutoffs */
+    order: 2;
+    -webkit-appearance: none;
+    appearance: none;
+    border: 0;
+    outline: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .custom-color-picker-wrapper label {
+    order: 3;
+    flex: 1;
+    margin-right: 0;
+    margin-left: 0.4rem;
   }
 
   /* --- Workspace: single-column, calculator takes all remaining space --- */
