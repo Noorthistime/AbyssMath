@@ -1432,6 +1432,14 @@ h1 {
     overflow-x: hidden;
   }
 
+  .fx-expression-list {
+    flex: none !important;
+    height: auto !important;
+    min-height: 60px;
+    margin: 0.5rem 0 !important;
+    overflow: visible !important;
+  }
+
   /* Slightly reduce fx-key height on small screens so the
      keypad fits without scrolling on most phones.        */
   .fx-key {
