@@ -2,6 +2,7 @@
 A full-stack scientific, programming, and graphing calculator web application featuring a modern Nothing/Apple-inspired UI, date calculations, and expression history.
 
 ## Project Structure
+```text
 AbyssMath/
 ├── backend/              # Node.js Express server and math evaluator
 │   └── server.js
@@ -14,6 +15,7 @@ AbyssMath/
 ├── package.json          # Node project dependencies & run scripts
 ├── package-lock.json
 └── README.md             # Project documentation
+```
 
 ## Features
 ### 1. Calculator Modes
