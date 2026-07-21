@@ -48,7 +48,7 @@ math.import({
 });
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 app.post('/api/evaluate', (req, res) => {
   const expression = String(req.body?.expression ?? '').trim();
@@ -71,7 +71,7 @@ app.post('/api/evaluate', (req, res) => {
 });
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 });
 
 app.listen(port, () => {
