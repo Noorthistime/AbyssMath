@@ -1981,6 +1981,9 @@ document.addEventListener('click', (event) => {
 });
 
 window.addEventListener('keydown', (event) => {
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+    return;
+  }
   const { key } = event;
 
   if (currentMode !== 'phone') {
@@ -2077,6 +2080,11 @@ function initGraphCanvas() {
   window.addEventListener('mouseup', onGraphMouseUp);
   graphCanvas.addEventListener('wheel', onGraphWheel, { passive: false });
 
+  // Touch support for mobile/tablet panning and pinch-zooming
+  graphCanvas.addEventListener('touchstart', onGraphTouchStart, { passive: false });
+  graphCanvas.addEventListener('touchmove', onGraphTouchMove, { passive: false });
+  graphCanvas.addEventListener('touchend', onGraphTouchEnd, { passive: false });
+
   // Resize observer to handle dynamic sizing
   const resizeObserver = new ResizeObserver(() => {
     if (currentMode === 'graphing') {
@@ -2160,6 +2168,67 @@ function onGraphMouseUp(e) {
     if (!isTracing) graphCanvas.style.cursor = 'grab';
   }
 }
+
+let lastPinchDistance = 0;
+
+function onGraphTouchStart(e) {
+  if (e.touches.length === 1) {
+    isDraggingGraph = true;
+    dragStartX = e.touches[0].clientX;
+    dragStartY = e.touches[0].clientY;
+  } else if (e.touches.length === 2) {
+    isDraggingGraph = false;
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    lastPinchDistance = Math.hypot(dx, dy);
+  }
+}
+
+function onGraphTouchMove(e) {
+  if (e.touches.length === 1 && isDraggingGraph) {
+    e.preventDefault();
+    const dx = e.touches[0].clientX - dragStartX;
+    const dy = e.touches[0].clientY - dragStartY;
+    graphOffsetX += dx;
+    graphOffsetY += dy;
+    dragStartX = e.touches[0].clientX;
+    dragStartY = e.touches[0].clientY;
+    
+    if (isTracing) {
+      const rect = graphCanvas.getBoundingClientRect();
+      currentMouseX = e.touches[0].clientX - rect.left;
+      currentMouseY = e.touches[0].clientY - rect.top;
+      isMouseInCanvas = true;
+    }
+    drawGraph();
+  } else if (e.touches.length === 2) {
+    e.preventDefault();
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const currentDistance = Math.hypot(dx, dy);
+    
+    if (lastPinchDistance > 0) {
+      const factor = currentDistance / lastPinchDistance;
+      lastPinchDistance = currentDistance;
+      
+      const rect = graphCanvas.getBoundingClientRect();
+      const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+      const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+      
+      zoomGraph(factor, centerX, centerY);
+    }
+  }
+}
+
+function onGraphTouchEnd(e) {
+  isDraggingGraph = false;
+  lastPinchDistance = 0;
+  if (isTracing) {
+    isMouseInCanvas = false;
+    drawGraph();
+  }
+}
+
 
 function onGraphWheel(e) {
   e.preventDefault();
@@ -3559,6 +3628,9 @@ function initFxKeypad() {
 
   // Handle haptic animation and feedback on physical keyboard keydown
   window.addEventListener('keydown', (event) => {
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+      return;
+    }
     if (currentMode !== 'phone') return;
     const s = phoneGetSettings();
     if (s.disableHaptics) return;
