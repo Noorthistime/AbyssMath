@@ -2207,23 +2207,33 @@ function onGraphTouchMove(e) {
     const dy = e.touches[0].clientY - e.touches[1].clientY;
     const currentDistance = Math.hypot(dx, dy);
     
-    if (lastPinchDistance > 0) {
-      const factor = currentDistance / lastPinchDistance;
-      lastPinchDistance = currentDistance;
-      
-      const rect = graphCanvas.getBoundingClientRect();
-      const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
-      const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
-      
-      zoomGraph(factor, centerX, centerY);
+    if (currentDistance > 0) {
+      if (lastPinchDistance <= 0) {
+        lastPinchDistance = currentDistance;
+      } else {
+        const factor = currentDistance / lastPinchDistance;
+        lastPinchDistance = currentDistance;
+        
+        const rect = graphCanvas.getBoundingClientRect();
+        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+        
+        zoomGraph(factor, centerX, centerY);
+      }
     }
   }
 }
 
 function onGraphTouchEnd(e) {
-  isDraggingGraph = false;
   lastPinchDistance = 0;
-  if (isTracing) {
+  if (e.touches.length === 1) {
+    isDraggingGraph = true;
+    dragStartX = e.touches[0].clientX;
+    dragStartY = e.touches[0].clientY;
+  } else {
+    isDraggingGraph = false;
+  }
+  if (isTracing && e.touches.length === 0) {
     isMouseInCanvas = false;
     drawGraph();
   }
